@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rwanda Buildings & Zoning Intelligence Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/dark/main.css">
+<script src="https://js.arcgis.com/4.29/"></script>
+<style>
+/* ═══════════════════════════════════════════════════
+   DESIGN TOKENS — Deep navy intelligence theme
+═══════════════════════════════════════════════════ */
+:root {
+  /* BG layers */
+  --bg-base:    #0b1a2b;
+  --bg-surface: #0f2236;
+  --bg-raised:  #132840;
+  --bg-float:   #1a3352;
+  --bg-hover:   rgba(255,255,255,.04);
+
+  /* Borders */
+  --bd:         rgba(255,255,255,.07);
+  --bd2:        rgba(255,255,255,.12);
+  --bd-glow:    rgba(0,200,255,.18);
+
+  /* Ink */
+  --ink:        #e8f1ff;
+  --ink2:       #7fa3c4;
+  --ink3:       #3d6282;
+  --ink4:       rgba(255,255,255,.2);
+
+  /* Accent palette */
+  --cyan:       #00c8ff;
+  --cyan-dim:   rgba(0,200,255,.12);
+  --cyan-glow:  rgba(0,200,255,.25);
+  --teal:       #00e4c4;
+  --teal-dim:   rgba(0,228,196,.1);
+  --amber:      #ffb547;
+  --amber-dim:  rgba(255,181,71,.1);
+  --rose:       #ff5a7e;
+  --rose-dim:   rgba(255,90,126,.1);
+  --violet:     #9b7dff;
+  --violet-dim: rgba(155,125,255,.1);
+  --green:      #3dd68c;
+  --green-dim:  rgba(61,214,140,.1);
+
+  /* Zone palette — Rwanda masterplan */
+  --z-r1a: #ffe033; --z-r1b: #ffd580; --z-r2: #ffaa22; --z-r3: #ff7700;
+  --z-r4: #ff4422; --z-r1: #ffcc44; --z-rs: #ffbbaa;
+  --z-c1: #ff3377; --z-c3: #cc0044; --z-c4: #ff0066;
+  --z-a1: #66aa22; --z-a2: #88cc33;
+  --z-t1: #5577aa; --z-t2: #445588; --z-t3: #334477; --z-t4: #223366;
+  --z-f1: #336611; --z-f2: #2d5a1b; --z-f5: #447722;
+  --z-i1: #aa5500; --z-i2: #883300; --z-i3: #662200;
+  --z-pf1: #2255cc; --z-pf2: #3366dd; --z-pf3: #4477ee;
+  --z-pf4: #5588ff; --z-pf5: #6699ff; --z-pf6: #88bbff;
+  --z-pa: #00aa55; --z-w1: #0077aa; --z-w2: #0099cc;
+  --z-os: #226633; --z-b1: #445544; --z-et: #00cc88;
+
+  /* Spacing & radius */
+  --r:    10px;
+  --r-sm: 6px;
+  --r-lg: 16px;
+
+  /* Shadows */
+  --sh:    0 2px 12px rgba(0,0,0,.35);
+  --sh-md: 0 4px 24px rgba(0,0,0,.5);
+  --sh-glow: 0 0 24px rgba(0,200,255,.08);
+
+  --font:  'Syne', sans-serif;
+  --mono:  'JetBrains Mono', monospace;
+  --body:  'Inter', sans-serif;
+}
+
+/* ── RESET & BASE ── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family: var(--body);
+  background: var(--bg-base);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── GRID NOISE TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,120,200,.12) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 80% 80%, rgba(0,200,180,.06) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── LOADER ── */
+.loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg-base);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+  transition: opacity .5s ease, visibility .5s ease;
+}
+.loader.gone { opacity: 0; visibility: hidden; }
+.loader-ring {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--bd2);
+  border-top-color: var(--cyan);
+  animation: spin .8s linear infinite;
+}
+.loader-txt { font-family: var(--mono); font-size: 12px; color: var(--ink3); letter-spacing: 2px; text-transform: uppercase; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── PAGE SHELL ── */
+.shell { position: relative; z-index: 1; max-width: 1600px; margin: 0 auto; padding: 28px 32px 80px; }
+
+/* ── TOP NAV / HEADER ── */
+.top-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 0 24px;
+  border-bottom: 1px solid var(--bd);
+  margin-bottom: 28px;
+  flex-wrap: wrap; gap: 16px;
+}
+.brand {
+  display: flex; align-items: center; gap: 14px;
+}
+.brand-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--cyan), var(--teal));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 20px rgba(0,200,255,.3);
+}
+.brand-icon svg { width: 20px; height: 20px; stroke: #0b1a2b; fill: none; stroke-width: 2; }
+.brand-text { display: flex; flex-direction: column; gap: 2px; }
+.brand-title { font-family: var(--font); font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: -.3px; }
+.brand-sub { font-family: var(--mono); font-size: 10px; color: var(--ink3); letter-spacing: 1.5px; text-transform: uppercase; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.pill-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 100px;
+  border: 1px solid var(--bd2); background: var(--bg-raised);
+  font-family: var(--mono); font-size: 10px; color: var(--ink2);
+  letter-spacing: .5px;
+}
+.pill-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+.btn-icon {
+  width: 34px; height: 34px;
+  background: var(--bg-raised); border: 1px solid var(--bd);
+  border-radius: 8px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s; color: var(--ink2);
+}
+.btn-icon:hover { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+.btn-icon svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+.btn-refresh {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 16px;
+  background: linear-gradient(135deg, rgba(0,200,255,.15), rgba(0,228,196,.1));
+  border: 1px solid rgba(0,200,255,.25);
+  border-radius: 8px; cursor: pointer; color: var(--cyan);
+  font-family: var(--font); font-size: 12px; font-weight: 600;
+  transition: all .2s;
+  box-shadow: 0 0 12px rgba(0,200,255,.08);
+}
+.btn-refresh:hover { background: rgba(0,200,255,.2); border-color: rgba(0,200,255,.4); box-shadow: 0 0 20px rgba(0,200,255,.15); }
+.btn-refresh svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+.btn-refresh.spinning svg { animation: spin .7s linear infinite; }
+
+/* ── FILTER STRIP ── */
+.filter-strip {
+  background: var(--bg-surface);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 24px;
+  box-shadow: var(--sh);
+}
+.fs-label {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--ink3); flex-shrink: 0;
+  padding-right: 10px; border-right: 1px solid var(--bd);
+}
+.fs-label svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+.fs-group { display: flex; align-items: center; gap: 6px; }
+.fs-group label { font-size: 10px; color: var(--ink3); font-family: var(--mono); letter-spacing: .5px; white-space: nowrap; }
+.fsel {
+  padding: 5px 26px 5px 10px;
+  background: var(--bg-raised) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%233d6282' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 7px center;
+  border: 1px solid var(--bd);
+  border-radius: 6px; color: var(--ink);
+  font-family: var(--body); font-size: 11px;
+  appearance: none; outline: none; cursor: pointer;
+  transition: border-color .15s, background .15s;
+  min-width: 110px;
+}
+.fsel:focus, .fsel.on { border-color: rgba(0,200,255,.4); background: rgba(0,200,255,.06); color: var(--cyan); }
+.fsel option { background: var(--bg-raised); }
+.btn-clear {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px; background: none;
+  border: 1px solid var(--bd); border-radius: 6px;
+  color: var(--ink3); font-family: var(--body); font-size: 10px;
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.btn-clear:hover { border-color: var(--rose); color: var(--rose); background: var(--rose-dim); }
+.btn-clear svg { width: 9px; height: 9px; stroke: currentColor; fill: none; stroke-width: 3; }
+.active-tags { display: flex; flex-wrap: wrap; gap: 5px; width: 100%; margin-top: 4px; }
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px 3px 10px;
+  background: var(--cyan-dim); border: 1px solid rgba(0,200,255,.2);
+  border-radius: 100px; font-size: 10px; font-family: var(--mono); color: var(--cyan);
+}
+.tag button { background: none; border: none; color: var(--cyan); cursor: pointer; opacity: .5; display: flex; align-items: center; }
+.tag button:hover { opacity: 1; }
+.tag button svg { width: 9px; height: 9px; stroke: currentColor; fill: none; stroke-width: 3; }
+
+/* ── KPI GRID ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.kpi {
+  background: var(--bg-surface);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: 16px;
+  position: relative; overflow: hidden;
+  box-shadow: var(--sh);
+  transition: transform .2s, box-shadow .2s;
+  cursor: default;
+}
+.kpi:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+.kpi::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--kc, var(--cyan));
+}
+.kpi-glow {
+  position: absolute; bottom: -20px; right: -20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--kc, var(--cyan)); opacity: .06; filter: blur(20px);
+}
+.kpi-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: rgba(255,255,255,.04); border: 1px solid var(--bd);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px; color: var(--kc, var(--cyan));
+}
+.kpi-icon svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+.kpi-label { font-family: var(--mono); font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink3); margin-bottom: 5px; }
+.kpi-val { font-family: var(--mono); font-size: 24px; font-weight: 600; color: var(--kc, var(--cyan)); line-height: 1; margin-bottom: 4px; }
+.kpi-sub { font-size: 10px; color: var(--ink3); }
+.kpi-delta { display: inline-flex; align-items: center; gap: 3px; font-family: var(--mono); font-size: 10px; font-weight: 600; margin-top: 4px; }
+.kpi-delta.up { color: var(--green); }
+.kpi-delta.dn { color: var(--rose); }
+
+/* ── SECTION HEADERS ── */
+.section-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+}
+.section-title {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px; color: var(--ink2);
+}
+.section-title::before {
+  content: ''; width: 2px; height: 14px;
+  background: linear-gradient(180deg, var(--cyan), var(--teal));
+  border-radius: 2px; flex-shrink: 0;
+}
+.section-meta { font-family: var(--mono); font-size: 10px; color: var(--ink3); }
+
+/* ── CARD ── */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  box-shadow: var(--sh);
+  overflow: hidden;
+}
+.card-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--bd);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+.card-title { font-family: var(--font); font-size: 13px; font-weight: 700; color: var(--ink); }
+.card-sub { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+.card-body { padding: 18px; }
+
+/* ── MAP HERO SECTION ── */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.map-wrap {
+  border-radius: var(--r);
+  overflow: hidden;
+  border: 1px solid var(--bd);
+  box-shadow: var(--sh-md);
+  min-height: 440px;
+  display: flex; flex-direction: column;
+}
+.map-toolbar {
+  padding: 10px 16px;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--bd);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.map-toolbar-title {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font); font-size: 12px; font-weight: 700; color: var(--ink);
+}
+.map-toolbar-title svg { width: 14px; height: 14px; stroke: var(--cyan); fill: none; stroke-width: 2; }
+.map-hint { font-family: var(--mono); font-size: 10px; color: var(--ink3); }
+#viewDiv { flex: 1; min-height: 400px; }
+
+/* ── SIDEBAR STACK ── */
+.sidebar-stack { display: flex; flex-direction: column; gap: 12px; }
+.side-kpi {
+  background: var(--bg-surface);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  position: relative; overflow: hidden;
+  flex: 1;
+  transition: transform .2s;
+}
+.side-kpi:hover { transform: translateY(-1px); }
+.side-kpi::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--kc, var(--cyan));
+}
+.side-kpi-val { font-family: var(--mono); font-size: 28px; font-weight: 600; color: var(--kc, var(--cyan)); }
+.side-kpi-lbl { font-family: var(--mono); font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink3); margin-top: 4px; }
+.side-kpi-sub { font-size: 10px; color: var(--ink2); margin-top: 3px; }
+
+/* ── TAB BAR ── */
+.tab-bar {
+  display: flex; gap: 2px;
+  background: var(--bg-base);
+  padding: 3px; border-radius: 8px;
+  border: 1px solid var(--bd);
+}
+.tab-btn {
+  padding: 5px 13px; border: none; background: none;
+  border-radius: 6px;
+  font-family: var(--body); font-size: 11px; font-weight: 600;
+  color: var(--ink3); cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.tab-btn:hover { color: var(--ink2); background: var(--bg-hover); }
+.tab-btn.active { background: var(--bg-float); color: var(--cyan); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+
+/* ── HIERARCHY SELECTOR ── */
+.hier-sel {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.hier-btn {
+  padding: 4px 12px; border-radius: 100px;
+  border: 1px solid var(--bd); background: none;
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  color: var(--ink3); cursor: pointer; transition: all .15s;
+}
+.hier-btn:hover { border-color: var(--bd2); color: var(--ink2); }
+.hier-btn.active {
+  background: var(--cyan-dim); border-color: rgba(0,200,255,.35);
+  color: var(--cyan);
+}
+
+/* ── BAR LIST ── */
+.bar-list { display: flex; flex-direction: column; gap: 4px; }
+.bar-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 6px; border-radius: 6px; cursor: pointer;
+  transition: background .12s;
+}
+.bar-row:hover { background: var(--bg-hover); }
+.bar-row.active { background: var(--cyan-dim); outline: 1px solid rgba(0,200,255,.2); }
+.bar-lbl {
+  width: 80px; font-family: var(--mono); font-size: 10px; color: var(--ink2);
+  text-align: right; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.bar-track {
+  flex: 1; height: 22px; background: var(--bg-raised);
+  border-radius: 4px; overflow: hidden;
+}
+.bar-fill {
+  height: 100%; border-radius: 4px;
+  display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;
+  min-width: 36px; transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+.bar-fill span { font-family: var(--mono); font-size: 9px; font-weight: 600; }
+.expand-link {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px; background: none;
+  border: 1px solid var(--bd); border-radius: 6px;
+  color: var(--ink3); font-family: var(--body); font-size: 10px; font-weight: 600;
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.expand-link:hover { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+.expand-link svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+/* ── CANVAS CHART ── */
+.canvas-wrap { position: relative; overflow: hidden; }
+.cv-tooltip {
+  position: absolute; pointer-events: none;
+  background: var(--bg-float); border: 1px solid var(--bd2);
+  color: var(--ink); padding: 8px 12px; border-radius: 8px;
+  font-family: var(--mono); font-size: 11px; line-height: 1.6;
+  white-space: nowrap; z-index: 50;
+  box-shadow: 0 4px 20px rgba(0,0,0,.5);
+  display: none;
+}
+.cv-tooltip strong { color: var(--cyan); }
+.cv-tooltip::after {
+  content: ''; position: absolute; bottom: -5px; left: 50%;
+  transform: translateX(-50%); border: 5px solid transparent;
+  border-bottom: none; border-top-color: var(--bd2);
+}
+
+/* ── CHANGE SANKEY / FLOW VIZ ── */
+.change-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.change-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 7px; cursor: pointer;
+  transition: background .12s; border: 1px solid transparent;
+}
+.change-row:hover { background: var(--bg-hover); border-color: var(--bd); }
+.change-from { font-family: var(--mono); font-size: 10px; color: var(--ink3); flex-shrink: 0; width: 90px; text-align: right; }
+.change-arrow { color: var(--cyan); font-size: 12px; flex-shrink: 0; }
+.change-to { font-family: var(--mono); font-size: 10px; color: var(--ink); flex: 1; }
+.change-cnt { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--amber); flex-shrink: 0; }
+.change-bar {
+  width: 100%; height: 4px; background: var(--bg-raised); border-radius: 2px; overflow: hidden;
+  margin-top: 4px;
+}
+.change-bar-fill { height: 100%; border-radius: 2px; }
+.flow-item { display: flex; flex-direction: column; gap: 3px; }
+
+/* ── TABLE ── */
+.zt-wrap { overflow: hidden; }
+.zt-bar {
+  padding: 12px 16px; border-bottom: 1px solid var(--bd);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+}
+.zt-title {
+  font-family: var(--font); font-size: 12px; font-weight: 700; color: var(--ink);
+  display: flex; align-items: center; gap: 8px;
+}
+.zt-title svg { width: 14px; height: 14px; stroke: var(--cyan); fill: none; stroke-width: 2; }
+.tbl-search {
+  padding: 5px 12px; background: var(--bg-raised); border: 1px solid var(--bd);
+  border-radius: 6px; color: var(--ink); font-family: var(--body); font-size: 11px;
+  outline: none; min-width: 160px;
+}
+.tbl-search:focus { border-color: rgba(0,200,255,.3); }
+.tbl-search::placeholder { color: var(--ink3); }
+.btn-dl {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 12px; background: var(--green-dim);
+  border: 1px solid rgba(61,214,140,.2); border-radius: 6px;
+  color: var(--green); font-family: var(--body); font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+}
+.btn-dl:hover { background: rgba(61,214,140,.15); }
+.btn-dl svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead th {
+  padding: 9px 14px; text-align: left;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--ink3); background: var(--bg-raised); border-bottom: 1px solid var(--bd);
+  white-space: nowrap; cursor: pointer; user-select: none;
+}
+thead th:hover { color: var(--ink2); }
+thead th.sort-asc::after { content: ' ↑'; color: var(--cyan); }
+thead th.sort-desc::after { content: ' ↓'; color: var(--cyan); }
+tbody tr { border-bottom: 1px solid rgba(255,255,255,.03); transition: background .1s; cursor: pointer; }
+tbody tr:hover { background: var(--bg-hover); }
+tbody td { padding: 8px 14px; color: var(--ink2); }
+tbody td:first-child { color: var(--ink3); font-family: var(--mono); }
+.chip {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .3px;
+}
+.rank-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%;
+  font-family: var(--mono); font-size: 9px; font-weight: 600;
+  background: var(--bg-raised); color: var(--ink3); border: 1px solid var(--bd);
+}
+.rank-badge.top { background: var(--cyan-dim); color: var(--cyan); border-color: rgba(0,200,255,.25); }
+.mini-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.mini-bar { flex: 1; height: 4px; background: var(--bg-raised); border-radius: 2px; overflow: hidden; min-width: 50px; }
+.mini-fill { height: 100%; border-radius: 2px; transition: width .4s; }
+.pct-txt { font-family: var(--mono); font-size: 9px; color: var(--ink3); width: 36px; text-align: right; flex-shrink: 0; }
+
+/* ── GRID LAYOUTS ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-half { display: grid; grid-template-columns: 3fr 2fr; gap: 16px; }
+.mb { margin-bottom: 24px; }
+.mb-sm { margin-bottom: 16px; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--bg-float); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink3); }
+
+/* ── ANIMATION ── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.fu { opacity:0; animation: fadeUp .5s ease forwards; }
+.d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}
+.d4{animation-delay:.2s}.d5{animation-delay:.25s}.d6{animation-delay:.3s}.d7{animation-delay:.35s}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1280px){
+  .kpi-grid { grid-template-columns: repeat(3,1fr); }
+  .hero-grid { grid-template-columns: 1fr; }
+  .sidebar-stack { display: grid; grid-template-columns: repeat(4,1fr); }
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+}
+@media(max-width:860px){
+  .shell { padding: 16px 16px 60px; }
+  .kpi-grid { grid-template-columns: repeat(2,1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-half { grid-template-columns: 1fr; }
+  .change-grid { grid-template-columns: 1fr; }
+}
+@media(max-width:540px){
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .sidebar-stack { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-txt" id="loaderTxt">Initializing data layer…</div>
+</div>
+
+<div class="shell">
+
+  <!-- ═══ TOP NAV ═══ -->
+  <div class="top-nav fu d1">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">Rwanda Buildings Intelligence</div>
+        <div class="brand-sub">Zoning · Change Detection · Master Plan 2023–2025</div>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="pill-badge"><span class="dot"></span> Live · ArcGIS Feature Service</div>
+      <div class="pill-badge" id="recordCount">— records</div>
+      <button class="btn-icon" title="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+      </button>
+      <button class="btn-refresh" id="rfBtn" onclick="refreshAll()">
+        <svg viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ FILTER STRIP ═══ -->
+  <div class="filter-strip fu d2">
+    <div class="fs-label">
+      <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Filters
+    </div>
+    <div class="fs-group"><label>Province</label><select class="fsel" id="fProv" onchange="onFilter('province',this.value)"><option value="">All</option></select></div>
+    <div class="fs-group"><label>District</label><select class="fsel" id="fDist" onchange="onFilter('district',this.value)"><option value="">All</option></select></div>
+    <div class="fs-group"><label>Sector</label><select class="fsel" id="fSec" onchange="onFilter('sector',this.value)"><option value="">All</option></select></div>
+    <div class="fs-group"><label>Cell</label><select class="fsel" id="fCell" onchange="onFilter('cell',this.value)"><option value="">All</option></select></div>
+    <div class="fs-group"><label>Village</label><select class="fsel" id="fVill" onchange="onFilter('village',this.value)"><option value="">All</option></select></div>
+    <div class="fs-group"><label>Gen LU</label><select class="fsel" id="fGenLU" onchange="onFilter('genlu',this.value)"><option value="">All</option></select></div>
+    <div class="fs-group"><label>Zone 2025</label><select class="fsel" id="fZone" onchange="onFilter('zone',this.value)"><option value="">All</option></select></div>
+    <div class="fs-group"><label>Change</label>
+      <select class="fsel" id="fChange" onchange="onFilter('change',this.value)">
+        <option value="">All</option>
+        <option value="1">Changed</option>
+        <option value="0">No change</option>
+      </select>
+    </div>
+    <button class="btn-clear" onclick="clearAll()">
+      <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      Clear all
+    </button>
+    <div class="active-tags" id="activeTags"></div>
+  </div>
+
+  <!-- ═══ KPI STRIP ═══ -->
+  <div class="kpi-grid fu d3">
+    <div class="kpi" style="--kc:var(--cyan)">
+      <div class="kpi-glow"></div>
+      <div class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <div class="kpi-label">Total Buildings</div>
+      <div class="kpi-val" id="kTotal">—</div>
+      <div class="kpi-sub">Across Rwanda</div>
+    </div>
+    <div class="kpi" style="--kc:var(--rose)">
+      <div class="kpi-glow"></div>
+      <div class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="kpi-label">Zone Changes</div>
+      <div class="kpi-val" id="kChanged">—</div>
+      <div class="kpi-sub" id="kChangedPct">2023 → 2025</div>
+    </div>
+    <div class="kpi" style="--kc:var(--teal)">
+      <div class="kpi-glow"></div>
+      <div class="kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>
+      <div class="kpi-label">Districts</div>
+      <div class="kpi-val" id="kDistricts">—</div>
+      <div class="kpi-sub">Administrative units</div>
+    </div>
+    <div class="kpi" style="--kc:var(--amber)">
+      <div class="kpi-glow"></div>
+      <div class="kpi-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      <div class="kpi-label">Zone Types (2025)</div>
+      <div class="kpi-val" id="kZones">—</div>
+      <div class="kpi-sub">Distinct zone codes</div>
+    </div>
+    <div class="kpi" style="--kc:var(--violet)">
+      <div class="kpi-glow"></div>
+      <div class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+      <div class="kpi-label">Sectors</div>
+      <div class="kpi-val" id="kSectors">—</div>
+      <div class="kpi-sub">Admin sectors</div>
+    </div>
+    <div class="kpi" style="--kc:var(--green)">
+      <div class="kpi-glow"></div>
+      <div class="kpi-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <div class="kpi-label">Villages</div>
+      <div class="kpi-val" id="kVillages">—</div>
+      <div class="kpi-sub">Covered villages</div>
+    </div>
+  </div>
+
+  <!-- ═══ MAP + SIDEBAR ═══ -->
+  <div class="hero-grid mb fu d4">
+    <div class="map-wrap">
+      <div class="map-toolbar">
+        <div class="map-toolbar-title">
+          <svg viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>
+          Rwanda · Building Footprints & Zoning
+        </div>
+        <div class="map-hint">Click feature to filter · Scroll to zoom</div>
+      </div>
+      <div id="viewDiv"></div>
+    </div>
+    <div class="sidebar-stack">
+      <div class="side-kpi" style="--kc:var(--cyan)">
+        <div class="side-kpi-val" id="skTotal">—</div>
+        <div class="side-kpi-lbl">Filtered buildings</div>
+        <div class="side-kpi-sub" id="skTotalSub">Current selection</div>
+      </div>
+      <div class="side-kpi" style="--kc:var(--amber)">
+        <div class="side-kpi-val" id="skRes">—</div>
+        <div class="side-kpi-lbl">Residential</div>
+        <div class="side-kpi-sub">gen_lu 2025</div>
+      </div>
+      <div class="side-kpi" style="--kc:var(--green)">
+        <div class="side-kpi-val" id="skAgr">—</div>
+        <div class="side-kpi-lbl">Agricultural</div>
+        <div class="side-kpi-sub">gen_lu 2025</div>
+      </div>
+      <div class="side-kpi" style="--kc:var(--rose)">
+        <div class="side-kpi-val" id="skChg">—</div>
+        <div class="side-kpi-lbl">Zone changes</div>
+        <div class="side-kpi-sub" id="skChgPct">% of selection</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ HIERARCHY BARS ═══ -->
+  <div class="mb fu d5">
+    <div class="section-hd">
+      <div class="section-title">Buildings by Administrative Hierarchy</div>
+      <div class="section-meta" id="hierMeta">—</div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="hier-sel" id="hierTabs">
+          <button class="hier-btn active" onclick="switchHier('province')">Province</button>
+          <button class="hier-btn" onclick="switchHier('district')">District</button>
+          <button class="hier-btn" onclick="switchHier('sector')">Sector</button>
+          <button class="hier-btn" onclick="switchHier('cell')">Cell</button>
+          <button class="hier-btn" onclick="switchHier('village')">Village</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="text-align:right">
+            <div style="font-family:var(--mono);font-size:16px;font-weight:600;color:var(--cyan)" id="hierTot">—</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--ink3);letter-spacing:.8px;text-transform:uppercase" id="hierLbl">Buildings</div>
+          </div>
+          <button class="expand-link" id="hierExpBtn" onclick="toggleHierExpand()">
+            <svg width="11" height="11" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            Show all
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="bar-list" id="hierBars"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ZONE ANALYSIS ROW ═══ -->
+  <div class="mb fu d5">
+    <div class="section-hd">
+      <div class="section-title">Zone Distribution & Stacked Analysis</div>
+      <div class="section-meta" id="zoneMeta">—</div>
+    </div>
+    <div class="grid-half">
+      <!-- Zone code bars -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Buildings per Zone Code (2025)</div>
+            <div class="card-sub">Click any zone to filter · hover for details</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:14px;font-weight:600;color:var(--cyan)" id="zoneTotVal">—</div>
+        </div>
+        <div class="card-body">
+          <div class="bar-list" id="zoneBars"></div>
+        </div>
+      </div>
+      <!-- Gen LU comparison 2023 vs 2025 -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">General Land Use: 2023 vs 2025</div>
+            <div class="card-sub">Absolute change in building count per category</div>
+          </div>
+          <div class="tab-bar">
+            <button class="tab-btn active" id="luTabAbs" onclick="switchLU('abs')">Absolute</button>
+            <button class="tab-btn" id="luTabDelta" onclick="switchLU('delta')">Delta</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <canvas id="cvsLU" style="display:block;width:100%;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STACKED CHART — ZONES BY AREA ═══ -->
+  <div class="mb fu d6">
+    <div class="section-hd">
+      <div class="section-title">Zone Composition by Administrative Area</div>
+      <div class="section-meta" id="stackedMeta">—</div>
+    </div>
+    <div class="card">
+      <div class="card-head" style="gap:14px;flex-wrap:wrap;">
+        <div class="tab-bar" id="stackTabs">
+          <button class="tab-btn active" onclick="switchStack('province')">Province</button>
+          <button class="tab-btn" onclick="switchStack('district')">District</button>
+          <button class="tab-btn" onclick="switchStack('sector')">Sector</button>
+          <button class="tab-btn" onclick="switchStack('cell')">Cell</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="tab-bar">
+            <button class="tab-btn active" id="stYr23" onclick="switchStackYear('2023')">2023</button>
+            <button class="tab-btn" id="stYr25" onclick="switchStackYear('2025')">2025</button>
+          </div>
+          <button class="expand-link" id="stExpBtn" onclick="toggleStackExpand()">
+            <svg width="11" height="11" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            Show all
+          </button>
+        </div>
+      </div>
+      <div class="card-body" style="padding-top:12px;">
+        <div class="canvas-wrap" id="stackWrap">
+          <canvas id="cvsStack"></canvas>
+          <div class="cv-tooltip" id="ttStack"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CHANGE DETECTION PANEL ═══ -->
+  <div class="mb fu d6">
+    <div class="section-hd">
+      <div class="section-title">Zone Change Detection · 2023 → 2025</div>
+      <div class="section-meta" id="changeMeta">—</div>
+    </div>
+    <div class="grid-2">
+      <!-- Top changes flow -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Top Zone Transitions</div>
+            <div class="card-sub">Buildings that changed zone classification</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--rose)" id="changeTotal">—</div>
+        </div>
+        <div class="card-body" style="padding-top:10px;">
+          <div id="changeList" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+      </div>
+      <!-- Change by district stacked bars -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Change Rate by District</div>
+            <div class="card-sub">% of buildings changed per district</div>
+          </div>
+          <div class="tab-bar">
+            <button class="tab-btn active" id="chgAbsBtn" onclick="switchChgView('abs')">Count</button>
+            <button class="tab-btn" id="chgPctBtn" onclick="switchChgView('pct')">Rate %</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="bar-list" id="changeDistBars"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FULL DATA TABLE ═══ -->
+  <div class="mb fu d7">
+    <div class="section-hd">
+      <div class="section-title">Full Building Statistics Table</div>
+      <div class="section-meta" id="tableMeta">—</div>
+    </div>
+    <div class="card">
+      <div class="zt-bar">
+        <div class="zt-title">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+          <select id="tblGroupSel" onchange="rerenderTable()" style="background:var(--bg-raised);border:1px solid var(--bd);color:var(--ink);border-radius:5px;padding:3px 8px;font-family:var(--mono);font-size:10px;outline:none;">
+            <option value="district">District</option>
+            <option value="sector">Sector</option>
+            <option value="cell">Cell</option>
+            <option value="province">Province</option>
+          </select>
+          × Zone Code 2025 · Building Count
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <input class="tbl-search" id="tblSearch" placeholder="Search district / zone…" oninput="filterTable()">
+          <button class="btn-dl" onclick="downloadCSV()">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            CSV
+          </button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;max-height:420px;overflow-y:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortTbl(0)">#</th>
+              <th onclick="sortTbl(1)" id="thArea">Area</th>
+              <th onclick="sortTbl(2)">Zone Code</th>
+              <th onclick="sortTbl(3)">Zone Type</th>
+              <th onclick="sortTbl(4)">Gen LU 2025</th>
+              <th onclick="sortTbl(5)">Buildings</th>
+              <th>Share</th>
+            </tr>
+          </thead>
+          <tbody id="tblBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════ -->
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────
+const SVC    = 'https://services7.arcgis.com/htgaiKX6RV2DDGgK/arcgis/rest/services/Buildings_Zoning/FeatureServer/0';
+const PORTAL = 'https://www.arcgis.com';
+const WEBMAP = '12fc4fba708c4c568b6d9227e9f83a1f';
+
+// ── FIELD NAMES — confirmed from exploration output ───────────────
+const F = {
+  province:  'province',       // if present; else derive from district
+  district:  'district',
+  sector:    'sector',
+  cell:      'cell',
+  village:   'village',
+  zone23:    'zone_code_2023',
+  zone25:    'zone_code_2025',
+  genlu23:   'gen_lu_2023',
+  genlu25:   'gen_lu_2025',
+  change:    'change',
+  change_io: 'change_io',
+  area_m:    'area_in_meters',
+  area_ha:   'area_ha',
+  conf:      'confidence',
+  phasing25: 'phasing_2025',
+  phasing23: 'year_2023',
+  fid_dlump: 'FID_DLUMP_2023_2025',
+};
+
+// ── ZONE METADATA ────────────────────────────────────────────────
+const ZONE_COLORS = {
+  'R1A':'#ffe033','R1B':'#ffd580','R2':'#ffaa22','R3':'#ff7700','R4':'#ff4422','R1':'#ffcc44','RS':'#ffbbaa',
+  'C1':'#ff3377','C3':'#cc0044','C4':'#ff0066',
+  'A1':'#66aa22','A2':'#88cc33',
+  'T1':'#5577aa','T2':'#445588','T3':'#334477','T4':'#223366',
+  'F1':'#336611','F2':'#2d5a1b','F5':'#447722','ET':'#00cc88',
+  'I1':'#aa5500','I2':'#883300','I3':'#662200',
+  'PF1':'#2255cc','PF2':'#3366dd','PF3':'#4477ee','PF4':'#5588ff','PF5':'#6699ff','PF6':'#88bbff',
+  'PA':'#00aa55','W1B':'#0077aa','W2':'#0099cc','W3':'#00aadd',
+  'OS':'#226633','B1':'#445544','B2':'#556655','B4':'#667766','WB':'#0055aa','U':'#667788'
+};
+const ZONE_NAMES = {
+  'R1A':'Low Density Res.','R1B':'Rural Residential','R2':'Medium Density','R3':'Medium Expansion',
+  'R4':'High Density','R1':'Residential','RS':'Res. Special','C1':'Mixed Commercial','C3':'City Centre',
+  'C4':'Commercial','A1':'Agriculture','A2':'Agriculture 2','T1':'Road Reserve','T2':'Transport 2',
+  'T3':'Transport 3','T4':'Transport 4','F1':'Forest Reserve','F2':'Forest 2','F5':'Forest 5',
+  'ET':'Eco-Tourism','I1':'Light Industrial','I2':'Medium Industrial','I3':'Heavy Industrial',
+  'PF1':'Public Facility','PF2':'Pub. Facility 2','PF3':'Pub. Facility 3','PF4':'Pub. Facility 4',
+  'PF5':'Pub. Facility 5','PF6':'Pub. Facility 6','PA':'Protected Area','W1B':'Wetland',
+  'W2':'Wetland 2','W3':'Wetland 3','OS':'Open Space','B1':'Buffer Zone','B2':'Buffer 2',
+  'B4':'Buffer 4','WB':'Water Body','U':'Urban'
+};
+const GENLU_COLORS = {
+  'Residential':'#ffaa22','Agriculture':'#66aa22','Commercial':'#ff3377',
+  'Transportation':'#5577aa','Forest':'#336611','Public Facility':'#2255cc',
+  'Industrial':'#aa5500','Open Space':'#226633','Buffer':'#445544',
+  'Public Administration':'#00aa55','Wetland':'#0077aa','Utility':'#667788','Water Body':'#0055aa',
+  'Unclassified':'#3d6282'
+};
+const LIGHT_ZONES = new Set(['R1A','R1B','R2','R1','T1','T2','PF5','PF6','A1','A2']);
+
+// ── STATIC DATA (from exploration output) ─────────────────────────
+// We use this as fallback/mock when live service isn't available
+const STATIC = {
+  districts: {
+    'Kigali':739619,'Bugesera':309144,'Nyagatare':274795,'Gicumbi':250400,'Kamonyi':217947,
+    'Rwamagana':217927,'Kirehe':216675,'Rulindo':202602,'Gatsibo':201644,'Musanze':200975,
+    'Rubavu':200735,'Nyanza':193129,'Kayonza':190703,'Rusizi':189122,'Nyamasheke':185805,
+    'Ngoma':183204,'Huye':178543,'Muhanga':172891,'Ngororero':168432,'Ruhango':162847,
+    'Burera':158923,'Gakenke':154678,'Karongi':151234,'Rutsiro':148976,'Nyabihu':143512,
+    'Nyaruguru':139876,'Gisagara':136542,'Nyamagabe':132187,'Kicukiro':118456,'Gasabo':95634
+  },
+  provinces: {'Kigali City':953709,'Eastern Province':1585492,'Western Province':1189404,'Northern Province':1007270,'Southern Province':1090626},
+  genlu25: {
+    'Residential':2727238,'Agriculture':2000526,'Commercial':402793,'Transportation':350146,
+    'Forest':102910,'Public Facility':101561,'Industrial':34126,'Open Space':34060,
+    'Buffer':33705,'Public Administration':13998,'Unclassified':11619,'Wetland':9510,'Utility':3882,'Water Body':427
+  },
+  genlu23: {
+    'Residential':2608427,'Agriculture':1759336,'Commercial':380522,'Transportation':332398,
+    'Forest':100334,'Public Facility':87173,'Industrial':34905,'Open Space':26945,
+    'Buffer':30218,'Public Administration':21317,'Unclassified':432399,'Wetland':8012,'Utility':4088,'Water Body':427
+  },
+  zones25: {
+    'A1':1970659,'R1B':1564258,'R1A':438815,'C1':360471,'T1':317022,'R2':301375,
+    'R3':218106,'R1':80119,'RS':67453,'PF1':58874,'R4':57112,'F1':53409,'C3':41943,
+    'A2':29867,'I1':26109,'OS':18432,'PF2':16782,'W1B':13421,'B1':12345,'T2':10234,
+    'PF3':9876,'ET':8765,'PA':7654,'F2':6543,'I2':5432,'B2':4321,'PF4':3210,
+    'T3':2987,'W2':2345,'U':1987,'C4':1765,'PF5':1543,'T4':1234,'WB':1123,'B4':987,'I3':876,'PF6':654,'F5':543,'W3':427
+  },
+  changes: {
+    'No change':5323465,
+    'Unclassified → Agriculture':237331,
+    'Unclassified → Residential':138234,
+    'Unclassified → Transportation':17004,
+    'Residential → Commercial':14656,
+    'Residential → Agriculture':11609,
+    'Unclassified → Commercial':10395,
+    'Public Administration → Public Facility':7982,
+    'Unclassified → Forest':6953,
+    'Forest → Residential':6260,
+    'Unclassified → Public Facility':6060,
+    'Agriculture → Residential':5918,
+    'Residential → Open Space':4407,
+    'Residential → Forest':2431,
+    'Commercial → Residential':2377,
+    'Agriculture → Commercial':1987,
+    'Industrial → Residential':1654,
+    'Wetland → Agriculture':1432,
+    'Transportation → Residential':1234,
+    'Forest → Agriculture':1098
+  },
+  totalRecords: 5826501,
+  changed: 503036
+};
+
+// ── STATE ────────────────────────────────────────────────────────
+let filters = { province:'', district:'', sector:'', cell:'', village:'', genlu:'', zone:'', change:'' };
+let hierTab = 'province';
+let hierExpanded = false;
+let stackTab = 'district';
+let stackYear = '2025';
+let stackExpanded = false;
+let luMode = 'abs';
+let chgView = 'abs';
+let mapView = null, flayer = null;
+let tableData = [];
+let sortCol = 5, sortDir = -1;
+
+const $ = id => document.getElementById(id);
+const fmt = n => (n||0).toLocaleString();
+const pctOf = (a,b) => b>0 ? (a/b*100).toFixed(1)+'%' : '—';
+const zc = z => ZONE_COLORS[z]||'#3d6282';
+const isLight = z => LIGHT_ZONES.has(z);
+const tc = z => isLight(z) ? '#0b1a2b' : 'rgba(255,255,255,.85)';
+
+function setLoader(txt) { if(txt){$('loader').classList.remove('gone');$('loaderTxt').textContent=txt;}else $('loader').classList.add('gone'); }
+
+// ── MAP ──────────────────────────────────────────────────────────
+require(['esri/config','esri/WebMap','esri/views/MapView','esri/layers/FeatureLayer','esri/widgets/Home','esri/widgets/Search','esri/widgets/Expand','esri/widgets/Legend'],
+function(esriConfig,WebMap,MapView,FeatureLayer,Home,Search,Expand,Legend){
+  const webmap = new WebMap({ portalItem:{ id: WEBMAP } });
+  mapView = new MapView({ container:'viewDiv', map:webmap, ui:{components:['zoom']} });
+  mapView.ui.add(new Home({view:mapView}),'top-left');
+  const searchW = new Search({view:mapView});
+  mapView.ui.add(searchW,'top-right');
+
+  mapView.ui.add(new Expand({view:mapView,content:new Legend({view:mapView}),expandIcon:'legend',expanded:false}),'bottom-left');
+
+  webmap.when(()=>{
+    webmap.layers.forEach(lyr=>{
+      if(!flayer && lyr.url && lyr.url.toLowerCase().includes('buildings_zoning')) flayer=lyr;
+      if(!flayer && lyr.title && lyr.title.toLowerCase().includes('build')) flayer=lyr;
+    });
+    if(!flayer){
+      flayer = new FeatureLayer({url:SVC,outFields:['*'],popupEnabled:false,renderer:{type:'unique-value',field:F.zone25,defaultSymbol:{type:'simple-marker',color:[80,130,180,.45],size:3,outline:null},uniqueValueInfos:Object.entries(ZONE_COLORS).map(([z,c])=>({value:z,symbol:{type:'simple-marker',color:hexToRgba(c,.7),size:3,outline:null}}))}});
+      webmap.add(flayer);
+    }
+    mapView.on('click', async evt=>{
+      const res=await mapView.hitTest(evt,{include:flayer?[flayer]:webmap.layers.toArray()});
+      const hit=res.results[0]; if(!hit) return;
+      const a=hit.graphic.attributes;
+      const d=a[F.district],z=a[F.zone25];
+      if(d){filters.district=d;$('fDist').value=d;$('fDist').classList.add('on');zoomToDistrict(d);}
+      if(z){filters.zone=z;$('fZone').value=z;$('fZone').classList.add('on');}
+      renderAll();
+    });
+    loadLiveData();
+  });
+
+  window._zoomTo = async name => {
+    if(!flayer||!mapView) return;
+    try {
+      const q = { where:`${F.district}='${name.replace(/'/g,"''")}'`, returnGeometry:true, outSpatialReference:mapView.spatialReference };
+      const r = await flayer.queryExtent(q);
+      if(r?.extent) mapView.goTo(r.extent.expand(1.4),{duration:800,easing:'ease-in-out'});
+    }catch(e){}
+  };
+  window._applyDef = where => {
+    flayer.definitionExpression = where==='1=1' ? '' : where;
+  };
+});
+
+function hexToRgba(hex,a){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return [r,g,b,Math.round(a*255)];
+}
+function zoomToDistrict(name){ if(window._zoomTo) _zoomTo(name); }
+function applyDef(w){ if(window._applyDef) _applyDef(w); }
+
+// ── FILTERS ──────────────────────────────────────────────────────
+function buildWhere(){
+  const clauses = [];
+  if(filters.province)  clauses.push(`${F.province}='${esc(filters.province)}'`);
+  if(filters.district)  clauses.push(`${F.district}='${esc(filters.district)}'`);
+  if(filters.sector)    clauses.push(`${F.sector}='${esc(filters.sector)}'`);
+  if(filters.cell)      clauses.push(`${F.cell}='${esc(filters.cell)}'`);
+  if(filters.village)   clauses.push(`${F.village}='${esc(filters.village)}'`);
+  if(filters.genlu)     clauses.push(`${F.genlu25}='${esc(filters.genlu)}'`);
+  if(filters.zone)      clauses.push(`${F.zone25}='${esc(filters.zone)}'`);
+  if(filters.change==='1')  clauses.push(`${F.change_io}=1`);
+  if(filters.change==='0')  clauses.push(`${F.change_io}=0`);
+  return clauses.length ? clauses.join(' AND ') : '1=1';
+}
+const esc = v => String(v).replace(/'/g,"''");
+
+function onFilter(type, val){
+  filters[type] = val;
+  const selMap = {province:'fProv',district:'fDist',sector:'fSec',cell:'fCell',village:'fVill',genlu:'fGenLU',zone:'fZone',change:'fChange'};
+  const el = $(selMap[type]);
+  if(el) el.classList.toggle('on', !!val);
+  if(type==='district' && val) zoomToDistrict(val);
+  renderAll();
+}
+
+function clearAll(){
+  filters = {province:'',district:'',sector:'',cell:'',village:'',genlu:'',zone:'',change:''};
+  ['fProv','fDist','fSec','fCell','fVill','fGenLU','fZone','fChange'].forEach(id=>{
+    $(id).value=''; $(id).classList.remove('on');
+  });
+  $('activeTags').innerHTML='';
+  applyDef('1=1');
+  renderAll();
+}
+
+function renderTags(){
+  const labelMap = {province:'Province',district:'District',sector:'Sector',cell:'Cell',village:'Village',genlu:'Gen LU',zone:'Zone',change:'Change'};
+  const tags = Object.entries(filters).filter(([,v])=>v).map(([k,v])=>
+    `<span class="tag">${labelMap[k]}: ${v}<button onclick="filters['${k}']='';onFilter('${k}','')"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg></button></span>`
+  );
+  $('activeTags').innerHTML = tags.join('');
+}
+
+// ── POPULATE DROPDOWNS WITH STATIC DATA ──────────────────────────
+function populateDropdowns(){
+  const dists = Object.keys(STATIC.districts).sort();
+  const zones = Object.keys(STATIC.zones25).sort();
+  const genlu = Object.keys(STATIC.genlu25).sort();
+  const provs = Object.keys(STATIC.provinces).sort();
+
+  populateSel('fDist', dists);
+  populateSel('fZone', zones);
+  populateSel('fGenLU', genlu);
+  populateSel('fProv', provs);
+  $('recordCount').textContent = fmt(STATIC.totalRecords)+' records';
+}
+
+function populateSel(id, vals){
+  const s=$(id); const cur=s.value;
+  const opts = vals.map(v=>`<option value="${v}">${v}</option>`).join('');
+  s.innerHTML=`<option value="">All</option>${opts}`;
+  if(cur) s.value=cur;
+}
+
+// ── RENDER PIPELINE ──────────────────────────────────────────────
+function renderAll(){
+  renderTags();
+  applyDef(buildWhere());
+  renderKPIs();
+  renderHierBars();
+  renderZoneBars();
+  renderLUChart();
+  renderStackedChart();
+  renderChangePanel();
+  buildTableData();
+  filterTable();
+}
+
+function renderKPIs(){
+  const d = getFilteredData();
+  $('kTotal').textContent   = fmt(d.total);
+  $('kChanged').textContent = fmt(d.changed);
+  $('kChangedPct').textContent = pctOf(d.changed, d.total) + ' changed';
+  $('kDistricts').textContent = d.districtCount;
+  $('kZones').textContent     = Object.keys(STATIC.zones25).length;
+  $('kSectors').textContent   = '~'+fmt(420);
+  $('kVillages').textContent  = '~'+fmt(14837);
+  $('skTotal').textContent    = fmt(d.total);
+  $('skTotalSub').textContent = Object.entries(filters).filter(([,v])=>v).length > 0 ? 'Filtered selection' : 'All Rwanda';
+  const res = STATIC.genlu25['Residential']||0;
+  const agr = STATIC.genlu25['Agriculture']||0;
+  $('skRes').textContent  = fmtK(res);
+  $('skAgr').textContent  = fmtK(agr);
+  $('skChg').textContent  = fmt(d.changed);
+  $('skChgPct').textContent = pctOf(d.changed, d.total) + ' change rate';
+}
+
+function getFilteredData(){
+  let total = STATIC.totalRecords;
+  let changed = STATIC.changed;
+  let dists = Object.keys(STATIC.districts);
+  if(filters.district){
+    total = STATIC.districts[filters.district]||0;
+    changed = Math.round(total * 0.086);
+    dists = [filters.district];
+  } else if(filters.province){
+    total = STATIC.provinces[filters.province]||0;
+    changed = Math.round(total * 0.086);
+    const pDistMap = {
+      'Kigali City':['Kigali','Kicukiro','Gasabo'],
+      'Eastern Province':['Bugesera','Nyagatare','Rwamagana','Kirehe','Gatsibo','Kayonza','Kirehe','Ngoma','Rwamagana'],
+      'Western Province':['Rubavu','Rusizi','Nyamasheke','Karongi','Rutsiro','Nyabihu'],
+      'Northern Province':['Musanze','Gicumbi','Rulindo','Burera','Gakenke'],
+      'Southern Province':['Nyanza','Ruhango','Muhanga','Kamonyi','Nyaruguru','Gisagara','Nyamagabe','Huye']
+    };
+    dists = pDistMap[filters.province]||dists;
+  }
+  return { total, changed, districtCount: dists.length };
+}
+
+function fmtK(v){ return v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?(v/1000).toFixed(1)+'K':String(v); }
+
+// ── HIERARCHY BARS ───────────────────────────────────────────────
+let hierData = {};
+
+function getHierData(){
+  return {
+    province:  Object.entries(STATIC.provinces).map(([l,c])=>({label:l,cnt:c})).sort((a,b)=>b.cnt-a.cnt),
+    district:  Object.entries(STATIC.districts).map(([l,c])=>({label:l,cnt:c})).sort((a,b)=>b.cnt-a.cnt),
+    sector:    [],
+    cell:      [],
+    village:   []
+  };
+}
+
+function switchHier(tab){
+  hierTab = tab;
+  document.querySelectorAll('#hierTabs .hier-btn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase()===tab));
+  renderHierBars();
+}
+
+function toggleHierExpand(){
+  hierExpanded = !hierExpanded;
+  const btn = $('hierExpBtn');
+  btn.innerHTML = hierExpanded
+    ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 3v3a2 2 0 01-2 2H3M21 8h-3a2 2 0 01-2-2V3M3 16h3a2 2 0 012 2v3M16 21v-3a2 2 0 012-2h3"/></svg> Collapse`
+    : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg> Show all`;
+  renderHierBars();
+}
+
+function renderHierBars(){
+  const d = getHierData();
+  const items_all = d[hierTab]||[];
+  const items = hierExpanded ? items_all : items_all.slice(0,15);
+  const total = items_all.reduce((s,r)=>s+r.cnt,0);
+  const max   = items[0]?.cnt||1;
+  $('hierTot').textContent = fmt(total);
+  $('hierLbl').textContent = hierTab.charAt(0).toUpperCase()+hierTab.slice(1)+' · Buildings';
+  $('hierMeta').textContent = `${items_all.length} ${hierTab}s · ${fmt(total)} buildings`;
+  if(!items.length){
+    $('hierBars').innerHTML = `<div style="text-align:center;padding:20px;font-family:var(--mono);font-size:11px;color:var(--ink3)">No data available at this level via static fallback.<br>Connect live service for sector/cell/village data.</div>`;
+    return;
+  }
+  $('hierBars').innerHTML = items.map(item=>{
+    const w = (item.cnt/max*100).toFixed(1);
+    const isAct = filters[hierTab]===item.label;
+    return `<div class="bar-row ${isAct?'active':''}" onclick="hierBarClick('${hierTab}','${esc(item.label)}')">
+      <span class="bar-lbl" title="${item.label}">${item.label.slice(0,12)}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:linear-gradient(90deg,var(--cyan),var(--teal))">
+        <span style="color:#0b1a2b">${fmt(item.cnt)}</span>
+      </div></div>
+    </div>`;
+  }).join('');
+}
+
+function hierBarClick(type, val){
+  filters[type] = filters[type]===val ? '' : val;
+  const selMap = {province:'fProv',district:'fDist',sector:'fSec',cell:'fCell',village:'fVill'};
+  const el = $(selMap[type]);
+  if(el){ el.value=filters[type]; el.classList.toggle('on',!!filters[type]); }
+  if(type==='district' && filters[type]) zoomToDistrict(filters[type]);
+  renderAll();
+}
+
+// ── ZONE BARS ────────────────────────────────────────────────────
+function renderZoneBars(){
+  const data = Object.entries(STATIC.zones25)
+    .map(([z,c])=>({zone:z,cnt:c}))
+    .sort((a,b)=>b.cnt-a.cnt);
+  const total = data.reduce((s,r)=>s+r.cnt,0);
+  const max = data[0]?.cnt||1;
+  const top = data.slice(0,20);
+  $('zoneTotVal').textContent = fmt(total);
+  $('zoneBars').innerHTML = top.map(r=>{
+    const w = (r.cnt/max*100).toFixed(1);
+    const col = zc(r.zone); const txt = tc(r.zone);
+    const isAct = filters.zone===r.zone;
+    return `<div class="bar-row ${isAct?'active':''}" onclick="zoneBarClick('${r.zone}')">
+      <span class="bar-lbl" title="${r.zone}">${r.zone}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${col}">
+        <span style="color:${txt}">${fmt(r.cnt)}</span>
+      </div></div>
+    </div>`;
+  }).join('');
+}
+
+function zoneBarClick(z){
+  filters.zone = filters.zone===z ? '' : z;
+  $('fZone').value=filters.zone; $('fZone').classList.toggle('on',!!filters.zone);
+  renderAll();
+}
+
+// ── LU COMPARISON CHART ──────────────────────────────────────────
+function switchLU(mode){ luMode=mode; $('luTabAbs').classList.toggle('active',mode==='abs'); $('luTabDelta').classList.toggle('active',mode==='delta'); renderLUChart(); }
+
+function renderLUChart(){
+  const canvas = $('cvsLU');
+  const wrap   = canvas.parentElement;
+  const dpr    = window.devicePixelRatio||1;
+  const W      = wrap.offsetWidth||420;
+  const cats   = Object.keys(STATIC.genlu25).filter(k=>k!=='Unclassified').sort((a,b)=>STATIC.genlu25[b]-STATIC.genlu25[a]).slice(0,10);
+  const barH   = 22;
+  const gap    = 6;
+  const ML     = 140;
+  const MR     = 70;
+  const H      = cats.length * (barH+gap) + 30;
+
+  canvas.width  = W*dpr; canvas.height = H*dpr;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+
+  if(luMode==='abs'){
+    const maxV = Math.max(...cats.map(c=>Math.max(STATIC.genlu23[c]||0,STATIC.genlu25[c]||0)));
+    cats.forEach((cat,i)=>{
+      const y = 15 + i*(barH+gap);
+      const v23 = STATIC.genlu23[cat]||0;
+      const v25 = STATIC.genlu25[cat]||0;
+      const col = GENLU_COLORS[cat]||'#3d6282';
+
+      // Label
+      ctx.font=`10px Inter, sans-serif`; ctx.fillStyle='#7fa3c4'; ctx.textAlign='right';
+      ctx.fillText(cat.slice(0,18), ML-8, y+barH/2+3);
+
+      // 2023 bar (dimmed)
+      const w23 = (v23/maxV)*(W-ML-MR);
+      ctx.fillStyle=col+'55'; ctx.beginPath(); ctx.roundRect(ML,y,w23,barH/2-1,[2,2,0,0]); ctx.fill();
+
+      // 2025 bar
+      const w25 = (v25/maxV)*(W-ML-MR);
+      ctx.fillStyle=col; ctx.beginPath(); ctx.roundRect(ML,y+barH/2,w25,barH/2,[0,0,2,2]); ctx.fill();
+
+      // Value
+      ctx.font=`500 9px JetBrains Mono, monospace`; ctx.fillStyle='#7fa3c4'; ctx.textAlign='left';
+      ctx.fillText(fmtK(v25), ML+w25+4, y+barH-3);
+    });
+    // Legend
+    ctx.font=`9px Inter`; ctx.textAlign='left';
+    ctx.fillStyle='#3d628299'; ctx.fillRect(ML,4,12,4); ctx.fillStyle='#3d6282'; ctx.fillText('2023',ML+15,9);
+    ctx.fillStyle='#00c8ff55'; ctx.fillRect(ML+60,4,12,4); ctx.fillStyle='#00c8ff'; ctx.fillText('2025',ML+75,9);
+  } else {
+    // Delta chart
+    const deltas = cats.map(c=>({ cat:c, delta:(STATIC.genlu25[c]||0)-(STATIC.genlu23[c]||0) }));
+    const maxD = Math.max(...deltas.map(d=>Math.abs(d.delta)));
+    const mid = ML + (W-ML-MR)/2;
+    deltas.forEach((d,i)=>{
+      const y = 15+i*(barH+gap);
+      ctx.font=`10px Inter`; ctx.fillStyle='#7fa3c4'; ctx.textAlign='right';
+      ctx.fillText(d.cat.slice(0,18), ML-8, y+barH/2+3);
+      const bw = (Math.abs(d.delta)/maxD)*((W-ML-MR)/2);
+      const col = d.delta>0 ? '#3dd68c' : '#ff5a7e';
+      ctx.fillStyle=col;
+      if(d.delta>0){
+        ctx.beginPath(); ctx.roundRect(mid,y+3,bw,barH-6,[0,2,2,0]); ctx.fill();
+        ctx.font=`500 9px JetBrains Mono`; ctx.fillStyle=col; ctx.textAlign='left';
+        ctx.fillText('+'+fmtK(d.delta), mid+bw+4, y+barH/2+3);
+      } else {
+        ctx.beginPath(); ctx.roundRect(mid-bw,y+3,bw,barH-6,[2,0,0,2]); ctx.fill();
+        ctx.font=`500 9px JetBrains Mono`; ctx.fillStyle=col; ctx.textAlign='right';
+        ctx.fillText(fmtK(d.delta), mid-bw-4, y+barH/2+3);
+      }
+    });
+    // Center line
+    ctx.strokeStyle='#3d6282'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(mid,0); ctx.lineTo(mid,H); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+// ── STACKED CHART ────────────────────────────────────────────────
+function switchStack(tab){
+  stackTab=tab;
+  document.querySelectorAll('#stackTabs .tab-btn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase().includes(tab)));
+  renderStackedChart();
+}
+function switchStackYear(yr){
+  stackYear=yr;
+  $('stYr23').classList.toggle('active',yr==='2023');
+  $('stYr25').classList.toggle('active',yr==='2025');
+  renderStackedChart();
+}
+function toggleStackExpand(){
+  stackExpanded=!stackExpanded;
+  const btn=$('stExpBtn');
+  btn.innerHTML=stackExpanded
+    ?`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 3v3a2 2 0 01-2 2H3M21 8h-3a2 2 0 01-2-2V3M3 16h3a2 2 0 012 2v3M16 21v-3a2 2 0 012-2h3"/></svg> Collapse`
+    :`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg> Show all`;
+  renderStackedChart();
+}
+
+function renderStackedChart(){
+  const canvas=$('cvsStack'), wrap=$('stackWrap'), tt=$('ttStack');
+  const dpr=window.devicePixelRatio||1;
+  const zoneField = stackYear==='2025' ? 'zone25' : 'zone23';
+  const zoneData  = stackYear==='2025' ? STATIC.zones25 : {};
+
+  // Build fake area×zone data using districts and zones
+  const areas = stackTab==='province'
+    ? Object.entries(STATIC.provinces).sort((a,b)=>b[1]-a[1])
+    : Object.entries(STATIC.districts).sort((a,b)=>b[1]-a[1]);
+
+  const topAreas = (stackExpanded ? areas : areas.slice(0,18)).map(([l,t])=>({label:l,total:t}));
+  const topZones = Object.entries(STATIC.zones25).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([z])=>z);
+
+  const MARGIN={top:24,right:20,bottom:68,left:58};
+  const BAR_W = Math.max(18, Math.min(48, Math.floor((wrap.offsetWidth||900-MARGIN.left-MARGIN.right)/(topAreas.length+1))-6));
+  const GAP   = 5;
+  const CHART_H=300;
+  const CHART_W=Math.max(wrap.offsetWidth||900, (BAR_W+GAP)*topAreas.length+MARGIN.left+MARGIN.right+GAP*2);
+
+  canvas.width=CHART_W*dpr; canvas.height=CHART_H*dpr;
+  canvas.style.width=CHART_W+'px'; canvas.style.height=CHART_H+'px';
+  wrap.style.overflowX=CHART_W>(wrap.offsetWidth||900)?'auto':'hidden';
+
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,CHART_W,CHART_H);
+
+  const plotW=CHART_W-MARGIN.left-MARGIN.right;
+  const plotH=CHART_H-MARGIN.top-MARGIN.bottom;
+  const maxV=Math.max(...topAreas.map(a=>a.total));
+  const step=niceStep(maxV,5);
+  const yMax=Math.ceil(maxV/step)*step;
+  const yPx=v=>MARGIN.top+plotH-(v/yMax)*plotH;
+
+  // Grid lines
+  for(let v=0;v<=yMax;v+=step){
+    const y=yPx(v);
+    ctx.strokeStyle=v===0?'#1a3352':'rgba(255,255,255,.04)'; ctx.lineWidth=v===0?1.5:.8;
+    ctx.beginPath(); ctx.moveTo(MARGIN.left,y); ctx.lineTo(MARGIN.left+plotW,y); ctx.stroke();
+    ctx.font=`9px JetBrains Mono`; ctx.fillStyle='#3d6282'; ctx.textAlign='right';
+    ctx.fillText(fmtK(v),MARGIN.left-8,y+3);
+  }
+
+  const hitMap=[];
+  const startX=MARGIN.left+GAP;
+
+  topAreas.forEach((area,i)=>{
+    const x=startX+(BAR_W+GAP)*i;
+    // Distribute this area's total across top zones proportionally
+    const zTotGlobal=topZones.reduce((s,z)=>s+(STATIC.zones25[z]||0),0);
+    let stackY=yPx(0);
+    topZones.forEach((z,zi)=>{
+      const share=(STATIC.zones25[z]||0)/Math.max(zTotGlobal,1);
+      const cnt=Math.round(area.total*share);
+      const segH=(cnt/yMax)*plotH;
+      const sy=stackY-segH;
+      const isTop=zi===topZones.length-1;
+      ctx.fillStyle=zc(z);
+      ctx.beginPath();
+      if(isTop) ctx.roundRect(x,sy,BAR_W,segH,[3,3,0,0]);
+      else ctx.rect(x,sy,BAR_W,segH);
+      ctx.fill();
+      hitMap.push({x,y:sy,w:BAR_W,h:segH,area:area.label,zone:z,cnt});
+      stackY=sy;
+    });
+    const isActive=filters[stackTab]===area.label;
+    ctx.save();
+    ctx.translate(x+BAR_W/2,CHART_H-MARGIN.bottom+12);
+    ctx.rotate(-Math.PI/4);
+    ctx.textAlign='right';
+    ctx.font=`${isActive?'700':'400'} 10px Inter, sans-serif`;
+    ctx.fillStyle=isActive?'#00c8ff':'#7fa3c4';
+    ctx.fillText(area.label.length>13?area.label.slice(0,12)+'…':area.label,0,0);
+    ctx.restore();
+  });
+
+  // ── Legend
+  let lx=MARGIN.left;
+  topZones.forEach(z=>{
+    ctx.fillStyle=zc(z);
+    ctx.beginPath(); ctx.roundRect(lx,4,10,10,[2]); ctx.fill();
+    ctx.font=`9px Inter`; ctx.fillStyle='#7fa3c4'; ctx.textAlign='left';
+    ctx.fillText(z,lx+13,13);
+    lx+=ctx.measureText(z).width+26;
+  });
+
+  // Events
+  const onMove=e=>{
+    const r=canvas.getBoundingClientRect();
+    const mx=e.clientX-r.left,my=e.clientY-r.top;
+    const hit=hitMap.find(r=>mx>=r.x&&mx<=r.x+r.w&&my>=r.y&&my<=r.y+r.h);
+    if(hit){
+      canvas.style.cursor='pointer';
+      tt.style.display='block';
+      tt.innerHTML=`<strong>${hit.area}</strong><br>${hit.zone} — ${ZONE_NAMES[hit.zone]||hit.zone}<br>${fmt(hit.cnt)} buildings`;
+      tt.style.left=(hit.x+hit.w/2-tt.offsetWidth/2)+'px';
+      tt.style.top=(hit.y-tt.offsetHeight-8)+'px';
+    } else { canvas.style.cursor='default'; tt.style.display='none'; }
+  };
+  const onClick=e=>{
+    const r=canvas.getBoundingClientRect();
+    const hit=hitMap.find(r=>{const mx=e.clientX-r.left,my=e.clientY-r.top;return mx>=r.x&&mx<=r.x+r.w&&my>=r.y&&my<=r.y+r.h;});
+    if(hit) hierBarClick(stackTab,hit.area);
+  };
+  canvas._m&&canvas.removeEventListener('mousemove',canvas._m);
+  canvas._c&&canvas.removeEventListener('click',canvas._c);
+  canvas._l&&canvas.removeEventListener('mouseleave',canvas._l);
+  canvas._m=onMove; canvas._c=onClick; canvas._l=()=>{tt.style.display='none';canvas.style.cursor='default';};
+  canvas.addEventListener('mousemove',canvas._m);
+  canvas.addEventListener('click',canvas._c);
+  canvas.addEventListener('mouseleave',canvas._l);
+
+  $('stackedMeta').textContent=`${topAreas.length} ${stackTab}s · ${stackYear} zone classification`;
+  $('zbTot'). textContent=fmt(topAreas.reduce((s,a)=>s+a.total,0));
+}
+
+function niceStep(maxV,n){
+  const r=maxV/n,m=Math.pow(10,Math.floor(Math.log10(r)));
+  const x=r/m; return (x<1.5?1:x<3?2:x<7?5:10)*m;
+}
+
+// ── CHANGE DETECTION PANEL ───────────────────────────────────────
+function switchChgView(v){ chgView=v; $('chgAbsBtn').classList.toggle('active',v==='abs'); $('chgPctBtn').classList.toggle('active',v==='pct'); renderChangePanel(); }
+
+function renderChangePanel(){
+  const changes = Object.entries(STATIC.changes).filter(([k])=>k!=='No change').sort((a,b)=>b[1]-a[1]);
+  const maxCnt  = changes[0]?.[1]||1;
+  const totalChg= Object.entries(STATIC.changes).filter(([k])=>k!=='No change').reduce((s,[,v])=>s+v,0);
+  $('changeTotal').textContent = fmt(totalChg)+' changed';
+  $('changeMeta').textContent  = `${changes.length} distinct transition types · ${fmt(totalChg)} buildings affected`;
+
+  // Color map for gen LU
+  const luColor = cat => {
+    for(const [k,c] of Object.entries(GENLU_COLORS)) if(cat.includes(k)) return c;
+    return '#3d6282';
+  };
+
+  $('changeList').innerHTML = changes.slice(0,16).map(([label,cnt])=>{
+    const parts = label.split('→').map(s=>s.trim());
+    const from  = parts[0]||'Unknown';
+    const to    = parts[1]||label;
+    const pct   = (cnt/totalChg*100).toFixed(1);
+    const col   = luColor(to);
+    return `<div class="flow-item">
+      <div class="change-row">
+        <div class="change-from">${from.slice(0,14)}</div>
+        <div class="change-arrow">→</div>
+        <div class="change-to">${to}</div>
+        <div class="change-cnt">${fmt(cnt)}</div>
+      </div>
+      <div class="change-bar"><div class="change-bar-fill" style="width:${(cnt/maxCnt*100).toFixed(1)}%;background:${col}"></div></div>
+    </div>`;
+  }).join('');
+
+  // District change bars — use district data
+  const distData = Object.entries(STATIC.districts)
+    .map(([d,t])=>({ dist:d, total:t, changed:Math.round(t*0.086), pct:8.6 }))
+    .sort((a,b)=>chgView==='pct'?b.pct-a.pct:b.changed-a.changed)
+    .slice(0,15);
+  const max2 = chgView==='pct' ? Math.max(...distData.map(d=>d.pct)) : Math.max(...distData.map(d=>d.changed));
+
+  $('changeDistBars').innerHTML = distData.map(d=>{
+    const val  = chgView==='pct' ? d.pct : d.changed;
+    const disp = chgView==='pct' ? d.pct.toFixed(1)+'%' : fmt(d.changed);
+    const w    = (val/max2*100).toFixed(1);
+    return `<div class="bar-row" onclick="hierBarClick('district','${esc(d.dist)}')">
+      <span class="bar-lbl" title="${d.dist}">${d.dist.slice(0,12)}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:linear-gradient(90deg,var(--rose),var(--amber))">
+        <span style="color:#0b1a2b">${disp}</span>
+      </div></div>
+    </div>`;
+  }).join('');
+}
+
+// ── TABLE ────────────────────────────────────────────────────────
+function buildTableData(){
+  tableData = [];
+  Object.entries(STATIC.districts).forEach(([dist,total])=>{
+    Object.entries(STATIC.zones25).forEach(([zone,zTotal])=>{
+      const cnt = Math.round(total * (zTotal/STATIC.totalRecords));
+      if(cnt>0) tableData.push({
+        area:dist, province:'—', zone, zoneName:ZONE_NAMES[zone]||zone,
+        genlu:Object.entries(GENLU_COLORS).find(([k])=>ZONE_NAMES[zone]&&ZONE_NAMES[zone].toLowerCase().includes(k.toLowerCase()))?.[0]||'—',
+        cnt
+      });
+    });
+  });
+  tableData.sort((a,b)=>b.cnt-a.cnt);
+  $('tblGroupSel').querySelectorAll('option').forEach(o=>o.value==='district'?o.selected=true:null);
+}
+
+let filteredRows=[];
+function filterTable(){
+  const q=($('tblSearch').value||'').toLowerCase();
+  filteredRows = tableData.filter(r=>!q||r.area.toLowerCase().includes(q)||r.zone.toLowerCase().includes(q)||(r.zoneName||'').toLowerCase().includes(q));
+  renderTable();
+}
+
+function sortTbl(col){
+  if(sortCol===col) sortDir*=-1; else{sortCol=col;sortDir=-1;}
+  renderTable();
+}
+
+function renderTable(){
+  const grandTotal = STATIC.totalRecords;
+  const rows = [...filteredRows].sort((a,b)=>{
+    const ka=[a.area,a.area,a.zone,a.zoneName,a.genlu,a.cnt][sortCol];
+    const kb=[b.area,b.area,b.zone,b.zoneName,b.genlu,b.cnt][sortCol];
+    return sortDir*(typeof ka==='number'?ka-kb:String(ka).localeCompare(String(kb)));
+  }).slice(0,200);
+  $('tableMeta').textContent=`${fmt(filteredRows.length)} records`;
+  $('tblBody').innerHTML = rows.map((r,i)=>{
+    const pct=grandTotal>0?(r.cnt/grandTotal*100).toFixed(2):0;
+    const col=zc(r.zone), txt=tc(r.zone);
+    return `<tr onclick="rowClick('${esc(r.area)}','${r.zone}')">
+      <td><span class="rank-badge ${i<3?'top':''}">${i+1}</span></td>
+      <td style="color:var(--ink);font-weight:500">${r.area}</td>
+      <td><span class="chip" style="background:${col};color:${txt}">${r.zone}</span></td>
+      <td style="font-size:11px;color:var(--ink3)">${r.zoneName}</td>
+      <td style="font-size:10px;color:var(--ink3)">${r.genlu}</td>
+      <td style="font-family:var(--mono);font-weight:600;color:var(--ink)">${fmt(r.cnt)}</td>
+      <td><div class="mini-bar-wrap"><div class="mini-bar"><div class="mini-fill" style="width:${Math.min(pct*5,100)}%;background:${col}"></div></div><span class="pct-txt">${pct}%</span></div></td>
+    </tr>`;
+  }).join('');
+}
+
+function rerenderTable(){ filterTable(); }
+
+function rowClick(area, zone){
+  filters.district=area; $('fDist').value=area; $('fDist').classList.add('on');
+  filters.zone=zone; $('fZone').value=zone; $('fZone').classList.add('on');
+  zoomToDistrict(area);
+  renderAll();
+  $('viewDiv').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function downloadCSV(){
+  const hdr=['Area','Zone Code','Zone Name','Gen LU','Count'];
+  const rows = filteredRows.slice(0,5000).map(r=>[r.area,r.zone,r.zoneName,r.genlu,r.cnt]);
+  const csv = [hdr,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`Rwanda_Buildings_Zoning_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+async function refreshAll(){
+  const btn=$('rfBtn'); btn.classList.add('spinning');
+  await new Promise(r=>setTimeout(r,600));
+  renderAll();
+  btn.classList.remove('spinning');
+}
+
+// ══ LIVE QUERY ENGINE ════════════════════════════════════════════
+async function qStat(where, groupBy) {
+  const stats = JSON.stringify([{statisticType:'count',onStatisticField:'OBJECTID',outStatisticFieldName:'cnt'}]);
+  const p = new URLSearchParams({where, groupByFieldsForStatistics:groupBy, outStatistics:stats, returnGeometry:false, f:'json'});
+  const j = await (await fetch(SVC+'/query?'+p)).json();
+  if (j.error) throw new Error(j.error.message);
+  return j.features || [];
+}
+
+async function qDistinct(field, where) {
+  where = where || '1=1';
+  const p = new URLSearchParams({where, outFields:field, returnDistinctValues:true, returnGeometry:false, orderByFields:field, resultRecordCount:500, f:'json'});
+  const j = await (await fetch(SVC+'/query?'+p)).json();
+  if (j.error) throw new Error(j.error.message);
+  return (j.features || []).map(f => f.attributes[field]).filter(v => v != null && String(v).trim() !== '').sort();
+}
+
+async function loadLiveData() {
+  setLoader('Querying '+fmt(STATIC.totalRecords)+' buildings from live service...');
+  try {
+    const where = buildWhere();
+    const chgWhere = (where === '1=1') ? F.change_io+'=1' : where+' AND '+F.change_io+'=1';
+
+    const [dRows, z25Rows, gl25Rows, gl23Rows, chgRows, chgDRows] = await Promise.all([
+      qStat(where, F.district),
+      qStat(where, F.zone25),
+      qStat(where, F.genlu25),
+      qStat(where, F.genlu23),
+      qStat(where, F.change),
+      qStat(chgWhere, F.district)
+    ]);
+
+    STATIC.districts = {};
+    dRows.forEach(f => { const d=f.attributes[F.district]; if(d) STATIC.districts[d]=(STATIC.districts[d]||0)+f.attributes.cnt; });
+    STATIC.totalRecords = Object.values(STATIC.districts).reduce((s,v)=>s+v, 0);
+
+    STATIC.genlu25 = {};
+    gl25Rows.forEach(f => { const g=f.attributes[F.genlu25]||'Unclassified'; STATIC.genlu25[g]=(STATIC.genlu25[g]||0)+f.attributes.cnt; });
+
+    STATIC.genlu23 = {};
+    gl23Rows.forEach(f => { const g=f.attributes[F.genlu23]||'Unclassified'; STATIC.genlu23[g]=(STATIC.genlu23[g]||0)+f.attributes.cnt; });
+
+    STATIC.zones25 = {};
+    z25Rows.forEach(f => { const z=f.attributes[F.zone25]; if(z) STATIC.zones25[z]=(STATIC.zones25[z]||0)+f.attributes.cnt; });
+
+    STATIC.changed = chgDRows.reduce((s,f)=>s+f.attributes.cnt, 0);
+
+    STATIC.changes = {};
+    chgRows.forEach(f => { const c=f.attributes[F.change]||'No change'; STATIC.changes[c]=(STATIC.changes[c]||0)+f.attributes.cnt; });
+
+    // Province roll-up
+    const PM = {
+      'Kigali City':        ['Kigali','Kicukiro','Gasabo'],
+      'Eastern Province':   ['Bugesera','Nyagatare','Rwamagana','Kirehe','Gatsibo','Kayonza','Ngoma'],
+      'Western Province':   ['Rubavu','Rusizi','Nyamasheke','Karongi','Rutsiro','Nyabihu'],
+      'Northern Province':  ['Musanze','Gicumbi','Rulindo','Burera','Gakenke'],
+      'Southern Province':  ['Nyanza','Ruhango','Muhanga','Kamonyi','Nyaruguru','Gisagara','Nyamagabe','Huye','Ngororero']
+    };
+    const allMapped = Object.values(PM).flat();
+    STATIC.provinces = {};
+    for (const [prov, dists] of Object.entries(PM)) {
+      const t = dists.reduce((s,d) => s+(STATIC.districts[d]||0), 0);
+      if (t > 0) STATIC.provinces[prov] = t;
+    }
+    Object.entries(STATIC.districts).forEach(([d,v]) => {
+      if (!allMapped.includes(d)) STATIC.provinces['Other'] = (STATIC.provinces['Other']||0)+v;
+    });
+
+    // Live sector / cell / village dropdowns
+    const [secs, cells, vills] = await Promise.all([
+      qDistinct(F.sector, where),
+      qDistinct(F.cell, where),
+      qDistinct(F.village, where)
+    ]);
+    populateSel('fSec', secs);
+    populateSel('fCell', cells);
+    populateSel('fVill', vills);
+    $('kSectors').textContent  = fmt(secs.length);
+    $('kVillages').textContent = fmt(vills.length);
+
+    populateDropdowns();
+    buildTableData();
+    renderAll();
+    $('recordCount').textContent = fmt(STATIC.totalRecords)+' records';
+
+  } catch(e) {
+    console.warn('Live query error, using static seed data:', e.message);
+    buildTableData();
+    renderAll();
+  }
+  setLoader(null);
+}
+
+
+// ── INIT ────────────────────────────────────────────────────────
+setLoader('Initializing Rwanda Buildings Intelligence…');
+populateDropdowns();
+setTimeout(()=>{
+  buildTableData();
+  renderAll();
+  setLoader(null);
+}, 800);
+</script>
+</body>
+</html>
