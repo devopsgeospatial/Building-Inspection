@@ -2,1541 +2,1064 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Rwanda Buildings & Zoning Application</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Building Permit Compliance</title>
 <style>
-/* ═══════════════════════════════════════════════
-   DESIGN TOKENS — Deep Ocean #0b1a2b
-═══════════════════════════════════════════════ */
+/* ── TOKENS ── */
 :root{
-  --bg:     #0b1a2b;
-  --bg1:    #0e1f32;
-  --bg2:    #122438;
-  --bg3:    #162c42;
-  --bg4:    #1c3550;
-  --bg5:    #243f5e;
-
-  --bd:     rgba(255,255,255,.06);
-  --bd2:    rgba(255,255,255,.11);
-  --bd3:    rgba(255,255,255,.18);
-
-  --ink:    #f0f6ff;
-  --ink2:   #a8c8e8;
-  --ink3:   #7fb8d8;
-  --ink4:   #5a90b0;
-
-  --teal:   #00d4b8;
-  --teald:  rgba(0,212,184,.08);
-  --tealb:  rgba(0,212,184,.15);
-  --gold:   #f0c060;
-  --goldd:  rgba(240,192,96,.08);
-  --rose:   #f06080;
-  --rosed:  rgba(240,96,128,.08);
-  --sky:    #48b8f0;
-  --skyd:   rgba(72,184,240,.08);
-  --lime:   #78d890;
-  --limed:  rgba(120,216,144,.08);
-  --violet: #a890f0;
-
-  --font:   'Syne', sans-serif;
-  --serif:  'DM Serif Display', serif;
-  --mono:   'JetBrains Mono', monospace;
+  --bg:#0b1a2b; --bg1:#0f2236; --bg2:#132a42; --bg3:#1a3350;
+  --bd:#1e3a54;  --bd2:#254460;
+  --ink:#e0f0ff; --ink2:#9dc4e0; --ink3:#5a8aaa;
+  --teal:#00d4b8; --sky:#48b4f0; --rose:#f06080;
+  --gold:#f0c060; --lime:#78d890; --violet:#a080f0;
+  --mono:'JetBrains Mono','Fira Mono','Courier New',monospace;
+  --sans:'Inter','Segoe UI',system-ui,sans-serif;
 }
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:13px;overflow-x:hidden;}
 
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-
-body{
-  font-family:var(--font);
-  background:var(--bg);
-  color:var(--ink);
-  -webkit-font-smoothing:antialiased;
-}
-
-/* ── Deep ocean atmosphere */
-body::before{
-  content:'';
-  position:fixed;inset:0;
-  background:
-    radial-gradient(ellipse 100% 60% at 50% -5%, rgba(0,212,184,.06) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 90% 80%, rgba(72,184,240,.04) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 50% at 10% 60%, rgba(0,100,180,.05) 0%, transparent 50%);
-  pointer-events:none;z-index:0;
-}
-
-/* Subtle horizontal scan lines */
-body::after{
-  content:'';
-  position:fixed;inset:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,212,184,.012) 3px,rgba(0,212,184,.012) 4px);
-  pointer-events:none;z-index:0;
-}
-
-.page{position:relative;z-index:1;max-width:1640px;margin:0 auto;padding:0 32px 120px;}
-
-/* ═══════════════════════════════════════════════
-   MASTHEAD
-═══════════════════════════════════════════════ */
+/* ── MASTHEAD ── */
 .masthead{
-  position:relative;
-  overflow:hidden;
-  padding:40px 0 32px;
-  margin-bottom:0;
-  border-bottom:1px solid var(--bd2);
-}
-/* Animated scan sweep */
-.masthead::before{
-  content:'';
-  position:absolute;
-  top:0;left:-100%;
-  width:60%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(0,212,184,.04),transparent);
-  animation:sweep 6s ease-in-out infinite;
-}
-@keyframes sweep{0%{left:-100%}100%{left:200%}}
-
-.mh-top{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:28px;}
-.mh-brand{}
-.mh-eyebrow{
-  font-family:var(--mono);font-size:10px;font-weight:500;
-  letter-spacing:3px;text-transform:uppercase;
-  color:var(--teal);margin-bottom:8px;
-  display:flex;align-items:center;gap:8px;
-}
-.mh-eyebrow::before{content:'';width:24px;height:1px;background:var(--teal);}
-.mh-title{
-  font-family:var(--serif);font-size:clamp(28px,4vw,48px);
-  color:var(--ink);line-height:1.05;letter-spacing:-.5px;
-}
-.mh-title em{color:var(--teal);font-style:italic;}
-.mh-sub{font-size:13px;color:var(--ink2);margin-top:6px;letter-spacing:.5px;}
-.mh-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
-.btn-rf{
-  display:flex;align-items:center;gap:6px;
-  padding:8px 16px;
-  background:var(--teald);border:1px solid rgba(0,212,184,.2);
-  color:var(--teal);font-family:var(--mono);font-size:10px;
-  letter-spacing:1.5px;text-transform:uppercase;
-  cursor:pointer;transition:all .2s;border-radius:2px;
-}
-
-.btn-rf:hover{background:var(--tealb);border-color:rgba(0,212,184,.4);}
-.btn-rf svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5;}
-.btn-rf.spin svg{animation:rot .7s linear infinite;}
-@keyframes rot{to{transform:rotate(360deg)}}
-
-/* Masthead KPI strip */
-.mh-kpis{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:1px;
-  background:var(--bd);
-  border:1px solid var(--bd2);
-}
-.mhkpi{
-  padding:16px 20px;
-  background:var(--bg1);
-  position:relative;overflow:hidden;
-  transition:background .2s;
-}
-.mhkpi:hover{background:var(--bg2);}
-.mhkpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--kc,var(--teal));transform:scaleX(0);transform-origin:left;transition:transform .3s;}
-.mhkpi:hover::after{transform:scaleX(1);}
-.mhkpi-lbl{font-family:var(--mono);font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink2);margin-bottom:6px;}
-.mhkpi-val{font-family:var(--serif);font-size:28px;color:var(--kc,var(--teal));line-height:1;}
-.mhkpi-sub{font-family:var(--mono);font-size:9px;color:var(--ink3);margin-top:4px;}
-
-/* ═══════════════════════════════════════════════
-   STATUS BAR
-═══════════════════════════════════════════════ */
-.sbar{
-  display:flex;align-items:center;gap:10px;
-  padding:9px 0;
-  font-family:var(--mono);font-size:10px;
-  color:var(--teal);letter-spacing:1px;
-  border-bottom:1px solid rgba(0,212,184,.15);
-  background:rgba(0,212,184,.03);
-  padding-left:0;padding-right:0;
-  margin:0 -32px;padding-left:32px;padding-right:32px;
-}
-.sbar.gone{display:none;}
-.sring{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,212,184,.2);border-top-color:var(--teal);animation:rot .7s linear infinite;flex-shrink:0;}
-.scls{margin-left:auto;background:none;border:none;color:var(--ink3);cursor:pointer;font-size:16px;}
-
-/* ═══════════════════════════════════════════════
-   FILTER BAR
-═══════════════════════════════════════════════ */
-.fbar{
-  display:flex;align-items:stretch;
-  background:var(--bg1);
-  border:1px solid var(--bd2);
-  border-top:none;
-  margin:0 -32px;
-  padding:0;
-  flex-wrap:nowrap;
-  overflow-x:auto;
-  position:sticky;top:0;z-index:100;
-}
-.fbar-lbl{
-  padding:9px 12px 9px 20px;
-  font-family:var(--mono);font-size:9px;
-  letter-spacing:2px;text-transform:uppercase;
-  color:var(--ink2);
-  border-right:1px solid var(--bd);
-  display:flex;align-items:center;gap:6px;flex-shrink:0;
-  background:var(--bg2);
-}
-.fbar-lbl svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.5;}
-.fg{display:flex;align-items:stretch;border-right:1px solid var(--bd);}
-.fg label{
-  padding:0 6px 0 10px;
-  font-family:var(--mono);font-size:8px;
-  letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--ink3);
-  display:flex;align-items:center;
-  white-space:nowrap;
-}
-.fsel{
-  padding:9px 18px 9px 4px;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%235a90b0' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 6px center transparent;
-  border:none;
-  color:var(--ink);
-  font-family:var(--mono);font-size:10px;
-  appearance:none;outline:none;cursor:pointer;
-  min-width:72px;
-}
-.fsel.on{color:var(--teal);}
-.fsel option{background:var(--bg2);}
-.btn-clr{
-  padding:9px 12px;
-  background:none;border:none;border-left:1px solid var(--bd);
-  color:var(--ink2);font-family:var(--mono);font-size:9px;
-  letter-spacing:1.5px;text-transform:uppercase;
-  cursor:pointer;transition:all .15s;
-  display:flex;align-items:center;gap:4px;margin-left:auto;
-}
-.btn-clr:hover{color:var(--rose);background:var(--rosed);}
-.btn-clr svg{width:8px;height:8px;stroke:currentColor;fill:none;stroke-width:3;}
-.atags{
-  display:flex;flex-wrap:wrap;gap:5px;
-  padding:6px 32px;
-  border-top:1px solid var(--bd);background:var(--bg1);
-}
-.tag{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:3px 10px 3px 12px;
-  border:1px solid rgba(0,212,184,.25);background:var(--teald);
-  font-family:var(--mono);font-size:9px;color:var(--teal);
-  letter-spacing:.5px;
-}
-.tag button{background:none;border:none;color:var(--teal);opacity:.5;cursor:pointer;font-size:13px;line-height:1;}
-.tag button:hover{opacity:1;}
-
-/* ═══════════════════════════════════════════════
-   SECTION HEADERS
-═══════════════════════════════════════════════ */
-.section{margin-top:60px;}
-.sec-hd{
-  display:flex;align-items:flex-end;justify-content:space-between;
-  margin-bottom:20px;gap:16px;flex-wrap:wrap;
-  padding-bottom:12px;
-  border-bottom:1px solid var(--bd2);
-  position:relative;
-}
-.sec-hd::before{
-  content:'';position:absolute;bottom:-1px;left:0;
-  width:60px;height:2px;
-  background:linear-gradient(90deg,var(--teal),transparent);
-}
-.sec-title{
-  font-family:var(--serif);font-size:22px;
-  color:var(--ink);font-weight:400;line-height:1.1;
-}
-.sec-meta{font-family:var(--mono);font-size:10px;color:var(--ink2);}
-
-/* ═══════════════════════════════════════════════
-   ADMIN LEVEL SWITCHER
-═══════════════════════════════════════════════ */
-.lvl-bar{
-  display:flex;gap:2px;
-  background:var(--bg2);
-  border:1px solid var(--bd2);
-  padding:3px;
-  width:fit-content;
-}
-.lvl-btn{
-  padding:6px 16px;background:none;border:none;
-  color:var(--ink2);font-family:var(--mono);
-  font-size:9px;font-weight:600;
-  letter-spacing:1.5px;text-transform:uppercase;
-  cursor:pointer;transition:all .15s;
-}
-.lvl-btn:hover{color:var(--ink2);}
-.lvl-btn.on{background:var(--bg4);color:var(--teal);box-shadow:inset 0 0 0 1px rgba(0,212,184,.2);}
-
-.yr-bar{
-  display:flex;gap:2px;background:var(--bg2);border:1px solid var(--bd2);padding:3px;width:fit-content;
-}
-.yr-btn{
-  padding:5px 14px;background:none;border:none;
-  color:var(--ink2);font-family:var(--mono);
-  font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;
-}
-.yr-btn:hover{color:var(--ink2);}
-.yr-btn.on{background:var(--bg4);color:var(--gold);}
-
-/* ═══════════════════════════════════════════════
-   CARD
-═══════════════════════════════════════════════ */
-.card{
-  background:var(--bg1);
-  border:1px solid var(--bd2);
-  position:relative;overflow:hidden;
-}
-.card::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,var(--teal),var(--sky),transparent);
-  opacity:.4;
-}
-.card-hd{
-  padding:14px 18px;
-  border-bottom:1px solid var(--bd);
+  background:linear-gradient(135deg,#071220 0%,#0b1a2b 60%,#0f2236 100%);
+  border-bottom:2px solid var(--teal);
+  padding:14px 32px 12px;
   display:flex;align-items:center;justify-content:space-between;
-  gap:10px;flex-wrap:wrap;
-  background:rgba(0,0,0,.15);
+  position:sticky;top:0;z-index:200;gap:24px;
 }
-.card-title{
-  font-family:var(--mono);font-size:10px;font-weight:600;
-  letter-spacing:1.8px;text-transform:uppercase;
-  color:var(--ink);
-  display:flex;align-items:center;gap:8px;
-}
-.card-title-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);}
-.card-body{padding:16px 18px;}
+.mh-left{display:flex;flex-direction:column;gap:2px;}
+.mh-title{font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-.2px;line-height:1.1;}
+.mh-title em{color:var(--teal);font-style:normal;}
+.mh-sub{font-family:var(--mono);font-size:8px;color:var(--ink3);letter-spacing:.8px;}
 
-/* ═══════════════════════════════════════════════
-   BAR ROWS
-═══════════════════════════════════════════════ */
-.blist{display:flex;flex-direction:column;gap:3px;}
-.brow{
-  display:flex;align-items:center;gap:10px;
-  padding:4px 8px;
-  min-width:0;
-  cursor:pointer;transition:background .1s;
+/* ── GLOBAL KPI STRIP ── */
+.gkpi-row{display:flex;gap:12px;margin-left:auto;}
+.gkpi{
+  background:var(--bg2);border:1px solid var(--bd2);border-radius:8px;
+  padding:9px 15px;min-width:120px;position:relative;overflow:hidden;
 }
-.brow:hover{background:rgba(255,255,255,.025);}
-.brow.on{background:var(--teald);outline:1px solid rgba(0,212,184,.15);}
-.blbl{
-  width:110px;flex-shrink:0;
-  font-family:var(--mono);font-size:9px;
-  color:var(--ink);text-align:right;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.btrack{
-  flex:1;min-width:0;height:18px;
-  background:var(--bg3);
-  position:relative;overflow:hidden;
-}
-.bfill{
-  height:100%;
-  display:flex;align-items:center;justify-content:flex-end;
-  padding-right:6px;
-  transition:width .55s cubic-bezier(.4,0,.2,1);
-}
-.bfill span{font-family:var(--mono);font-size:8px;font-weight:700;white-space:nowrap;}
+.gkpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.gkpi.c-teal::after{background:var(--teal);}
+.gkpi.c-lime::after{background:var(--lime);}
+.gkpi.c-rose::after{background:var(--rose);}
+.gkpi.c-gold::after{background:var(--gold);}
+.gkpi.c-sky::after{background:var(--sky);}
+.gkpi-lbl{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--ink3);text-transform:uppercase;margin-bottom:4px;}
+.gkpi-val{font-family:var(--mono);font-size:19px;font-weight:700;line-height:1;}
+.gkpi-sub{font-family:var(--mono);font-size:7px;color:var(--ink3);margin-top:2px;}
 
-/* ═══════════════════════════════════════════════
-   CANVAS TOOLTIP
-═══════════════════════════════════════════════ */
-.cvtt{
-  position:absolute;pointer-events:none;
-  background:var(--bg4);
-  border:1px solid var(--bd3);
-  color:var(--ink);padding:8px 13px;
-  font-family:var(--mono);font-size:10px;line-height:1.65;
-  white-space:nowrap;z-index:50;display:none;
-  box-shadow:0 8px 32px rgba(0,0,0,.5);
-}
-.cvtt strong{color:var(--teal);}
+/* ── STATUS ── */
+.sbar{background:var(--bg1);border-bottom:1px solid var(--bd);padding:4px 32px;
+  display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:8px;
+  color:var(--ink3);letter-spacing:1px;transition:all .3s;min-height:22px;}
+.sbar.gone{opacity:0;pointer-events:none;height:0;min-height:0;padding:0;border:none;}
+.sdot{width:5px;height:5px;border-radius:50%;background:var(--teal);flex-shrink:0;animation:pulse 1.4s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 
-/* ═══════════════════════════════════════════════
-   2-COL + 3-COL GRIDS
-═══════════════════════════════════════════════ */
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.g13{display:grid;grid-template-columns:1fr 3fr;gap:16px;}
-.g31{display:grid;grid-template-columns:3fr 1fr;gap:16px;}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+/* ── TABS ── */
+.tab-bar{background:var(--bg1);border-bottom:2px solid var(--bd);
+  padding:0 24px;display:flex;overflow-x:auto;
+  position:sticky;top:56px;z-index:190;scrollbar-width:none;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab{padding:9px 16px 7px;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--ink3);cursor:pointer;border:none;background:none;
+  border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;
+  display:flex;align-items:center;gap:6px;}
+.tab:hover{color:var(--ink2);background:var(--bg2);}
+.tab.on{color:var(--teal);border-bottom-color:var(--teal);background:var(--bg2);}
+.tbadge{font-size:7px;padding:1px 5px;border-radius:8px;background:var(--bd2);color:var(--ink3);}
+.tab.on .tbadge{background:var(--teal);color:var(--bg);}
 
-/* ═══════════════════════════════════════════════
-   MAP
-═══════════════════════════════════════════════ */
-.mapwrap{
-  background:var(--bg1);border:1px solid var(--bd2);
-  position:relative;overflow:hidden;
-}
-.mapwrap::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--teal),var(--sky),transparent);opacity:.4;z-index:1;}
-#mapDiv{height:520px;background:var(--bg2);}
-.map-ph{
-  display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:12px;
-  height:520px;color:var(--ink3);
-}
-.map-ph svg{width:32px;height:32px;stroke:currentColor;fill:none;stroke-width:1.5;opacity:.3;}
-.map-ph p{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;}
+/* ── MAIN ── */
+.main{padding:24px 32px 60px;}
+.city-view{display:none;}
+.city-view.on{display:block;}
 
-/* ═══════════════════════════════════════════════
-   TABLE
-═══════════════════════════════════════════════ */
-.tbl-ctrl{
-  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  padding:12px 18px;border-bottom:1px solid var(--bd);
-  background:rgba(0,0,0,.15);
-}
-.tbl-srch{
-  padding:6px 12px;background:var(--bg3);
-  border:1px solid var(--bd2);color:var(--ink);
-  font-family:var(--mono);font-size:10px;outline:none;flex:1;min-width:140px;
-}
-.tbl-srch:focus{border-color:rgba(0,212,184,.4);}
-.tbl-srch::placeholder{color:var(--ink3);}
-.tbl-sel{
-  padding:6px 10px;background:var(--bg3);border:1px solid var(--bd2);
-  color:var(--ink);font-family:var(--mono);font-size:10px;outline:none;cursor:pointer;
-}
-.tbl-lbl{font-family:var(--mono);font-size:9px;color:var(--ink2);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
-.btn-dl{
-  display:flex;align-items:center;gap:5px;
-  padding:6px 12px;background:var(--limed);
-  border:1px solid rgba(120,216,144,.25);color:var(--lime);
-  font-family:var(--mono);font-size:9px;letter-spacing:1px;
-  text-transform:uppercase;cursor:pointer;transition:all .15s;
-}
-.btn-dl:hover{background:rgba(120,216,144,.15);}
-.btn-dl svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5;}
-table{width:100%;border-collapse:collapse;}
-thead th{
-  padding:8px 14px;text-align:left;
-  font-family:var(--mono);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--ink2);background:var(--bg2);
-  border-bottom:1px solid var(--bd2);cursor:pointer;user-select:none;white-space:nowrap;
-}
-thead th:hover{color:var(--teal);}
-tbody tr{border-bottom:1px solid rgba(255,255,255,.03);transition:background .08s;cursor:pointer;}
-tbody tr:hover{background:rgba(0,212,184,.04);}
-tbody td{padding:7px 14px;font-family:var(--mono);font-size:10px;color:var(--ink);}
-.zchip{display:inline-block;padding:2px 7px;font-family:var(--mono);font-size:9px;font-weight:700;}
-.rnk{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;font-family:var(--mono);font-size:8px;background:var(--bg3);color:var(--ink2);}
-.rnk.top{background:var(--goldd);color:var(--gold);}
-.mbar-w{display:flex;align-items:center;gap:5px;}
-.mbar{flex:1;height:3px;background:var(--bg3);min-width:40px;}
-.mfill{height:100%;}
-.pct-t{font-family:var(--mono);font-size:9px;color:var(--ink2);width:36px;text-align:right;flex-shrink:0;}
+/* ── CITY HEADER ── */
+.city-hd{display:flex;align-items:flex-start;gap:14px;margin-bottom:20px;
+  padding-bottom:14px;border-bottom:1px solid var(--bd);}
+.city-icon{width:40px;height:40px;border-radius:10px;display:flex;
+  align-items:center;justify-content:center;flex-shrink:0;}
+.city-name{font-size:24px;font-weight:700;color:var(--ink);line-height:1;}
+.city-sub{font-family:var(--mono);font-size:8px;color:var(--ink3);letter-spacing:.8px;margin-top:3px;}
+.hd-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.yr-bar{display:flex;}
+.yr-btn{padding:5px 11px;font-family:var(--mono);font-size:8px;letter-spacing:1px;
+  border:1px solid var(--bd2);background:var(--bg2);color:var(--ink3);cursor:pointer;transition:all .15s;}
+.yr-btn:first-child{border-radius:4px 0 0 4px;}
+.yr-btn:last-child{border-radius:0 4px 4px 0;border-left:none;}
+.yr-btn.on{background:var(--teal);color:var(--bg);border-color:var(--teal);font-weight:700;}
 
-#s1ZoneBars > .brow { min-width:0; min-height:26px; display:flex; align-items:center; }
-#s1ZoneBars > .brow .btrack { min-width:0; flex:1; height:18px; }
-::-webkit-scrollbar{width:4px;height:4px;}
-::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:var(--bg4);}
+/* ── KPI CARDS (image-2 style) ── */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.kcard{background:var(--bg1);border:1px solid var(--bd2);border-radius:10px;
+  padding:15px 17px;position:relative;overflow:hidden;}
+.kcard::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:10px 10px 0 0;}
+.kcard.c-teal::after{background:var(--teal);}
+.kcard.c-lime::after{background:var(--lime);}
+.kcard.c-rose::after{background:var(--rose);}
+.kcard.c-gold::after{background:var(--gold);}
+.kcard.c-sky::after{background:var(--sky);}
+.kcard-lbl{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--ink3);
+  text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:5px;}
+.kcard-val{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;}
+.kcard-sub{font-family:var(--mono);font-size:8px;color:var(--ink3);margin-top:4px;}
 
-/* ── Animations */
-@keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.section{opacity:0;animation:fadeup .5s ease forwards;}
-.section:nth-child(1){animation-delay:.05s}
-.section:nth-child(2){animation-delay:.1s}
-.section:nth-child(3){animation-delay:.15s}
-.section:nth-child(4){animation-delay:.2s}
-.section:nth-child(5){animation-delay:.25s}
-.section:nth-child(6){animation-delay:.3s}
-.section:nth-child(7){animation-delay:.35s}
+/* ── SECTION LABEL ── */
+.sec-label{font-family:var(--mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--teal);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--bd);}
 
-/* ── Responsive */
-@media(max-width:1100px){.mh-kpis{grid-template-columns:repeat(3,1fr)}.g2,.g31,.g13{grid-template-columns:1fr}.g3{grid-template-columns:1fr 1fr}}
-@media(max-width:700px){.mh-kpis{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}.page{padding:0 14px 80px}}
+/* ── GRID ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:18px;}
+.grid-21{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:18px;}
+.grid-12{display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:18px;}
+.mb18{margin-bottom:18px;}
+.span2{grid-column:span 2;}
 
-/* ── FULLSCREEN MODAL */
-.fs-overlay{
-  display:none;position:fixed;inset:0;z-index:1000;
-  background:rgba(7,14,22,.96);
-  backdrop-filter:blur(8px);
-  flex-direction:column;
-}
-.fs-overlay.open{display:flex;}
-.fs-bar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 24px;
-  border-bottom:1px solid var(--bd2);
-  flex-shrink:0;
-}
-.fs-title{font-family:var(--serif);font-size:18px;color:var(--ink);}
-.fs-close{
-  display:flex;align-items:center;gap:6px;
-  padding:7px 16px;background:none;
-  border:1px solid var(--bd2);color:var(--ink2);
-  font-family:var(--mono);font-size:10px;letter-spacing:1px;
-  text-transform:uppercase;cursor:pointer;transition:all .15s;
-}
-.fs-close:hover{border-color:var(--rose);color:var(--rose);}
-.fs-close svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5;}
-.fs-body{
-  flex:1;overflow:auto;padding:24px;
-}
-.fs-body .brow{padding:5px 8px 5px 10px;}
-.fs-body .blbl{width:120px;font-size:10px;}
-.fs-body .btrack{height:22px;}
-.fs-body .bfill span{font-size:10px;}
-.fs-body canvas{width:100%!important;height:600px!important;}
+/* ── CARD ── */
+.card{background:var(--bg1);border:1px solid var(--bd);border-radius:8px;overflow:hidden;}
+.card-hd{padding:10px 14px 8px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.card-title{font-family:var(--mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--ink2);font-weight:600;display:flex;align-items:center;gap:6px;}
+.cdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.card-meta{font-family:var(--mono);font-size:8px;color:var(--ink3);white-space:nowrap;}
+.card-body{padding:13px 14px;}
 
-/* ── SWIPE MAP UI */
-.map-legend-bar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 20px;
-  background:var(--bg2);border-top:1px solid var(--bd2);
-  flex-shrink:0;
-}
-.mleg{display:flex;align-items:center;gap:8px;}
-.mleg-yr{
-  font-family:var(--serif);font-size:15px;color:var(--teal);
-}
-.mleg-lbl{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);}
-.mleg-center{
-  display:flex;align-items:center;gap:6px;
-  font-family:var(--mono);font-size:9px;letter-spacing:2px;
-  text-transform:uppercase;color:var(--ink2);
-}
-.map-zoom-hint{
-  padding:7px 20px;
-  background:var(--bg1);border-top:1px solid var(--bd);
-  font-family:var(--mono);font-size:9px;letter-spacing:1.5px;
-  text-transform:uppercase;color:var(--ink3);
-  display:flex;align-items:center;gap:6px;
-  transition:color .3s;
-}
-.map-zoom-hint.active{color:var(--lime);}
-.mapwrap{display:flex;flex-direction:column;}
+/* ── ADMIN LEVEL SWITCHER ── */
+.lvl-bar{display:flex;gap:0;}
+.lvl-btn{padding:4px 10px;font-family:var(--mono);font-size:8px;letter-spacing:.8px;
+  border:1px solid var(--bd2);background:var(--bg2);color:var(--ink3);
+  cursor:pointer;transition:all .15s;text-transform:uppercase;}
+.lvl-btn:first-child{border-radius:4px 0 0 4px;}
+.lvl-btn:last-child{border-radius:0 4px 4px 0;border-left:none;}
+.lvl-btn.on{background:var(--violet);color:#fff;border-color:var(--violet);}
+
+/* ── PERMIT BARS ── */
+.pbar-row{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--bd);}
+.pbar-row:last-child{border-bottom:none;}
+.pbar-lbl{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;
+  color:var(--ink2);width:130px;flex-shrink:0;}
+.pbar-track{flex:1;height:16px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:3px;display:flex;align-items:center;
+  justify-content:flex-end;padding-right:6px;transition:width .8s ease;}
+.pbar-cnt{font-family:var(--mono);font-size:8px;font-weight:700;color:rgba(0,0,0,.85);}
+.pbar-pct{font-family:var(--mono);font-size:9px;color:var(--ink3);width:38px;text-align:right;flex-shrink:0;}
+
+/* ── ZONE BARS (illegal by zone_code) ── */
+.zbar-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--bd);}
+.zbar-row:last-child{border-bottom:none;}
+.zbar-code{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--ink);
+  width:44px;flex-shrink:0;}
+.zbar-track{flex:1;height:14px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.zbar-fill{height:100%;background:#f06080cc;border-radius:2px;transition:width .7s ease;
+  display:flex;align-items:center;padding-left:6px;}
+.zbar-lbl{font-family:var(--mono);font-size:8px;color:rgba(0,0,0,.8);font-weight:700;white-space:nowrap;}
+.zbar-val{font-family:var(--mono);font-size:8px;color:var(--ink3);width:40px;text-align:right;flex-shrink:0;}
+
+/* ── ADMIN BREAKDOWN TABLE ── */
+.adm-scroll{max-height:280px;overflow-y:auto;scrollbar-width:thin;}
+.adm-scroll::-webkit-scrollbar{width:3px;}
+.adm-scroll::-webkit-scrollbar-thumb{background:var(--bd2);}
+.adm-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--bd);}
+.adm-row:last-child{border-bottom:none;}
+.adm-name{font-family:var(--mono);font-size:8px;color:var(--ink2);
+  width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.adm-stacked{flex:1;display:flex;height:12px;border-radius:2px;overflow:hidden;gap:1px;}
+.adm-seg{height:100%;transition:width .6s;}
+.adm-total{font-family:var(--mono);font-size:8px;color:var(--ink3);
+  width:40px;text-align:right;flex-shrink:0;}
+.adm-illpct{font-family:var(--mono);font-size:8px;color:var(--rose);
+  width:36px;text-align:right;flex-shrink:0;}
+
+/* ── OVERVIEW CARDS ── */
+.ov-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.ov-card{background:var(--bg1);border:1px solid var(--bd);border-radius:10px;
+  overflow:hidden;cursor:pointer;transition:all .2s;}
+.ov-card:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+.ov-top{padding:13px 15px 10px;border-bottom:1px solid var(--bd);}
+.ov-city-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.ov-cicon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ov-cname{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--ink);letter-spacing:.5px;}
+.ov-cprov{font-family:var(--mono);font-size:7px;color:var(--ink3);margin-top:1px;}
+.ov-sectors-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;
+  border-radius:10px;font-family:var(--mono);font-size:7px;letter-spacing:.8px;margin-bottom:7px;}
+.ov-total-row{display:flex;align-items:baseline;gap:5px;}
+.ov-total{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1;}
+.ov-total-lbl{font-family:var(--mono);font-size:8px;color:var(--ink3);}
+.ov-body{padding:10px 15px 13px;}
+.ov-bar-wrap{margin-bottom:5px;}
+.ov-bar-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+.ov-bar-name{font-family:var(--mono);font-size:8px;color:var(--ink3);}
+.ov-bar-val{font-family:var(--mono);font-size:8px;font-weight:700;}
+.ov-bar-track{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.ov-bar-fill{height:100%;border-radius:2px;transition:width .8s;}
+.ov-foot{display:flex;justify-content:space-between;align-items:center;
+  margin-top:9px;padding-top:8px;border-top:1px solid var(--bd);}
+.ov-comp-lbl{font-family:var(--mono);font-size:7px;color:var(--ink3);letter-spacing:1px;text-transform:uppercase;}
+.ov-comp-val{font-family:var(--mono);font-size:12px;font-weight:700;}
+.ov-arrow{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:8px;color:var(--teal);}
+
+/* ── COMPARATIVE ROWS ── */
+.cmp-row{display:flex;align-items:center;gap:10px;padding:5px 0;
+  border-bottom:1px solid var(--bd);cursor:pointer;}
+.cmp-row:hover .cmp-name{color:var(--ink);}
+.cmp-row:last-child{border-bottom:none;}
+.cmp-rank{font-family:var(--mono);font-size:8px;color:var(--ink3);width:16px;flex-shrink:0;}
+.cmp-name{font-family:var(--mono);font-size:9px;font-weight:700;width:74px;flex-shrink:0;transition:color .15s;}
+.cmp-stacked{flex:1;display:flex;height:14px;border-radius:3px;overflow:hidden;gap:1px;}
+.cmp-seg{height:100%;transition:width .8s;}
+.cmp-tot{font-family:var(--mono);font-size:8px;color:var(--ink2);width:40px;text-align:right;flex-shrink:0;}
+
+/* ── RISK ROWS ── */
+.risk-row{display:flex;align-items:center;gap:8px;padding:5px 0;
+  border-bottom:1px solid var(--bd);cursor:pointer;}
+.risk-row:last-child{border-bottom:none;}
+.risk-row:hover .risk-name{color:var(--ink);}
+.risk-rk{font-family:var(--mono);font-size:8px;color:var(--ink3);width:16px;}
+.risk-name{font-family:var(--mono);font-size:9px;font-weight:700;width:74px;flex-shrink:0;transition:color .15s;}
+.risk-track{flex:1;height:10px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.risk-fill{height:100%;border-radius:2px;transition:width .7s;}
+.risk-pct{font-family:var(--mono);font-size:9px;font-weight:700;width:36px;text-align:right;}
+
+/* ── MAP ── */
+.map-pills{display:flex;gap:6px;padding:7px 14px;background:var(--bg2);border-top:1px solid var(--bd);flex-wrap:wrap;align-items:center;}
+.mpill{display:flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;
+  font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:.8px;}
+.mp-legal{background:#00d4b820;color:var(--teal);border:1px solid #00d4b850;}
+.mp-illegal{background:#f0608020;color:var(--rose);border:1px solid #f0608050;}
+.mp-exist{background:#f0c06020;color:var(--gold);border:1px solid #f0c06050;}
+.map-hint{font-family:var(--mono);font-size:8px;color:var(--ink3);margin-left:auto;}
+#allMapDiv{width:100%;height:380px;background:var(--bg2);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){.kpi-row{grid-template-columns:repeat(3,1fr);}.ov-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:800px){.kpi-row{grid-template-columns:1fr 1fr;}.ov-grid{grid-template-columns:1fr 1fr;}.grid-21{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
-<div class="page">
 
-<!-- ═══════════════ MASTHEAD ═══════════════ -->
-<header class="masthead">
-  <div class="mh-top">
-    <div class="mh-brand">
-      <div class="mh-title">Buildings &amp; Zoning<br><em>Application</em></div>
-      <div class="mh-sub">Master Plan Analysis · 2023 → 2025 · All 30 Districts</div>
+<!-- ══ MASTHEAD ══ -->
+<div class="masthead">
+  <div class="mh-left">
+    <div class="mh-title">Building Permit <em>Compliance</em></div>
+    <div class="mh-sub">URBAN RWANDA · 2023–2025</div>
+  </div>
+  <div class="gkpi-row">
+    <div class="gkpi c-teal">
+      <div class="gkpi-lbl">Total Detected</div>
+      <div class="gkpi-val" style="color:var(--teal)" id="g_total">—</div>
+      <div class="gkpi-sub">Buildings analysed</div>
     </div>
-    <div class="mh-controls">
-      <button class="btn-rf" id="rfBtn" onclick="doRefresh()">
-        <svg viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>REFRESH
-      </button>
+    <div class="gkpi c-lime">
+      <div class="gkpi-lbl">Legal — With Permit</div>
+      <div class="gkpi-val" style="color:var(--lime)" id="g_legal">—</div>
+      <div class="gkpi-sub">Verified compliant</div>
+    </div>
+    <div class="gkpi c-rose">
+      <div class="gkpi-lbl">Illegal — Without Permit</div>
+      <div class="gkpi-val" style="color:var(--rose)" id="g_illegal">—</div>
+      <div class="gkpi-sub">Violations detected</div>
+    </div>
+    <div class="gkpi c-sky">
+      <div class="gkpi-lbl">Compliance Rate</div>
+      <div class="gkpi-val" style="color:var(--rose)" id="g_rate">—</div>
+      <div class="gkpi-sub" id="g_rate_sub">—</div>
     </div>
   </div>
-  <div class="mh-kpis">
-    <div class="mhkpi" style="--kc:var(--teal)">
-      <div class="mhkpi-lbl">Total Buildings</div>
-      <div class="mhkpi-val" id="mTot">5.8M</div>
-      <div class="mhkpi-sub" id="mTotSub">Current filter</div>
-    </div>
-    <div class="mhkpi" style="--kc:var(--rose)">
-      <div class="mhkpi-lbl">Zone Changes</div>
-      <div class="mhkpi-val" id="mChg">503K</div>
-      <div class="mhkpi-sub" id="mChgSub">2023 → 2025</div>
-    </div>
-    <div class="mhkpi" style="--kc:var(--gold)">
-      <div class="mhkpi-lbl">Residential</div>
-      <div class="mhkpi-val" id="mRes">2.7M</div>
-      <div class="mhkpi-sub">Gen LU 2025</div>
-    </div>
-    <div class="mhkpi" style="--kc:var(--lime)">
-      <div class="mhkpi-lbl">Agriculture</div>
-      <div class="mhkpi-val" id="mAgr">2.0M</div>
-      <div class="mhkpi-sub">Gen LU 2025</div>
-    </div>
-    <div class="mhkpi" style="--kc:var(--sky)">
-      <div class="mhkpi-lbl">Change Rate</div>
-      <div class="mhkpi-val" id="mRate">8.6%</div>
-      <div class="mhkpi-sub">Buildings reclassified</div>
-    </div>
-  </div>
-</header>
-
-<!-- STATUS -->
-<div class="sbar gone" id="sbar"><div class="sring"></div><span id="stxt">LOADING…</span><button class="scls" onclick="this.parentElement.classList.add('gone')">×</button></div>
-
-<!-- ═══════════════ FILTERS ═══════════════ -->
-<div class="fbar" id="fbar">
-  <div class="fbar-lbl"><svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>FILTER</div>
-  <div class="fg"><label>PROVINCE</label><select class="fsel" id="fProv" onchange="doFilter('province',this.value)"><option value="">ALL</option></select></div>
-  <div class="fg"><label>DISTRICT</label><select class="fsel" id="fDist" onchange="doFilter('district',this.value)"><option value="">ALL</option></select></div>
-  <div class="fg"><label>SECTOR</label><select class="fsel" id="fSec" onchange="doFilter('sector',this.value)"><option value="">ALL</option></select></div>
-  <div class="fg"><label>CELL</label><select class="fsel" id="fCell" onchange="doFilter('cell',this.value)"><option value="">ALL</option></select></div>
-  <div class="fg"><label>VILLAGE</label><select class="fsel" id="fVill" onchange="doFilter('village',this.value)"><option value="">ALL</option></select></div>
-  <div class="fg"><label>ZONE CODE</label><select class="fsel" id="fZone" onchange="doFilter('zone',this.value)"><option value="">ALL</option></select></div>
-  <div class="fg"><label>YEAR</label>
-    <select class="fsel" id="fYear" onchange="doFilter('year',this.value)">
-      <option value="">BOTH</option><option value="2025">2025</option><option value="2023">2023</option>
-    </select>
-  </div>
-  <button class="btn-clr" onclick="clearFilters()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>CLEAR</button>
 </div>
-<div class="atags" id="atags" style="display:none;margin:0 -32px;"></div>
 
-<!-- ═══════════════════════════════════════════════
-     SECTION 1 — Zone Code Distribution
-═══════════════════════════════════════════════ -->
-<div class="section">
-  <div class="sec-hd">
-    <div>
-            <div class="sec-title">Buildings per Zone Code</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <div class="yr-bar" id="yr1">
-        <button class="yr-btn on" id="yr1_25" onclick="setYr1('2025')">2025</button>
-        <button class="yr-btn" id="yr1_23" onclick="setYr1('2023')">2023</button>
+<!-- ══ STATUS ══ -->
+<div class="sbar gone" id="sbar">
+  <div class="sdot"></div><span id="stxt">Loading…</span>
+</div>
+
+<!-- ══ TABS ══ -->
+<div class="tab-bar" id="tabBar">
+  <button class="tab on" onclick="showTab('all')" id="tab_all">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+    All Districts
+    <span class="tbadge" id="badge_all">7</span>
+  </button>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- ── ALL DISTRICTS VIEW ── -->
+  <div class="city-view on" id="view_all">
+    <div class="city-hd">
+      <div class="city-icon" style="background:#0f2236;border:1px solid var(--bd2);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
       </div>
-      <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--teal)" id="s1tot">—</div>
-      <div class="sec-meta" id="s1meta">—</div>
-    </div>
-  </div>
-  <div class="card">
-    
-    <div class="card-body" style="padding:12px 18px;">
-      <div id="s1ZoneBars" class="blist" style="display:grid;grid-template-columns:1fr 1fr;gap:3px 24px;"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════
-     SECTION 2 — Stacked composition + Zone Change
-═══════════════════════════════════════════════ -->
-<div class="section">
-  <div class="sec-hd">
-    <div>
-            <div class="sec-title">Zone Composition &amp; Change by Administrative Unit</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-hd">
-      <div class="card-title"><span class="card-title-dot"></span>ZONE COMPOSITION BY AREA</div>
-        <button onclick="openFullscreen('s1wrap','Zone Composition by Area')" style="display:flex;align-items:center;gap:4px;padding:4px 10px;background:var(--teald);border:1px solid rgba(0,212,184,.2);color:var(--teal);font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>EXPAND
-        </button>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <div class="lvl-bar" id="lvl1">
-          <button class="lvl-btn on" onclick="setLvl1('province')">PROVINCE</button>
-          <button class="lvl-btn" onclick="setLvl1('district')">DISTRICT</button>
-          <button class="lvl-btn" onclick="setLvl1('sector')">SECTOR</button>
-          <button class="lvl-btn" onclick="setLvl1('cell')">CELL</button>
-          <button class="lvl-btn" onclick="setLvl1('village')">VILLAGE</button>
-        </div>
-        <div class="yr-bar" id="yr1b">
-          <button class="yr-btn on" id="yr1b_25" onclick="setYr1('2025')">2025</button>
-          <button class="yr-btn" id="yr1b_23" onclick="setYr1('2023')">2023</button>
+      <div>
+        <div class="city-name">All Districts</div>
+        <div class="city-sub">7 URBAN AREAS ANALYSED</div>
+      </div>
+      <div class="hd-right">
+        <div class="yr-bar" id="allYrBar">
+          <button class="yr-btn on" onclick="setAllYr('both')">BOTH</button>
+          <button class="yr-btn" onclick="setAllYr('2023')">2023</button>
+          <button class="yr-btn" onclick="setAllYr('2025')">2025</button>
         </div>
       </div>
     </div>
-    <div class="card-body" style="padding:12px;">
-      <div style="position:relative;overflow-x:auto;" id="s1wrap">
-        <canvas id="cv1"></canvas>
-        <div class="cvtt" id="tt1"></div>
+
+    <!-- Overview city cards -->
+    <div class="ov-grid" id="ovGrid"></div>
+
+    <!-- Comparative + Risk side by side -->
+    <div class="grid-2 mb18">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><div class="cdot" style="background:var(--teal)"></div>Permit Status — All Districts</div>
+          <div class="card-meta" id="cmpMeta">—</div>
+        </div>
+        <div class="card-body" id="cmpBars"></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><div class="cdot" style="background:var(--rose)"></div>Illegal Buildings Ranking</div>
+          <div class="card-meta">% without permit</div>
+        </div>
+        <div class="card-body" id="riskBars"></div>
+      </div>
+    </div>
+
+    <!-- All-cities map -->
+    <div class="card mb18">
+      <div class="card-hd">
+        <div class="card-title"><div class="cdot" style="background:var(--violet)"></div>Permit Coverage Map — All Urban Areas</div>
+        <div style="display:flex;gap:6px;">
+          <span class="mpill mp-legal"><svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> LEGAL</span>
+          <span class="mpill mp-illegal"><svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> ILLEGAL</span>
+        </div>
+      </div>
+      <div>
+        <div id="allMapDiv"></div>
+        <div class="map-pills"><span class="map-hint" id="allMapHint">Loading map…</span></div>
       </div>
     </div>
   </div>
+
+  <!-- ── CITY VIEWS (injected) ── -->
+  <div id="cityViews"></div>
 </div>
-
-<!-- ═══════════════════════════════════════════════
-     SECTION 3 — Total Buildings by Admin Level
-═══════════════════════════════════════════════ -->
-<div class="section">
-  <div class="sec-hd">
-    <div>
-            <div class="sec-title">Total Buildings by Administrative Unit</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <div class="lvl-bar" id="lvl3">
-        <button class="lvl-btn on" onclick="setLvl3('province')">PROVINCE</button>
-        <button class="lvl-btn" onclick="setLvl3('district')">DISTRICT</button>
-        <button class="lvl-btn" onclick="setLvl3('sector')">SECTOR</button>
-        <button class="lvl-btn" onclick="setLvl3('cell')">CELL</button>
-        <button class="lvl-btn" onclick="setLvl3('village')">VILLAGE</button>
-      </div>
-      <button class="btn-clr" id="expBtn3" onclick="toggleExp3()" style="border-color:var(--bd2);"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>SHOW ALL</button>
-      <div class="sec-meta" id="s3meta">—</div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-body" style="padding:12px 18px;">
-      <div class="blist" id="s3bars"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════
-     SECTION 4 — General Land Use 2023 vs 2025
-═══════════════════════════════════════════════ -->
-<div class="section">
-  <div class="sec-hd">
-    <div>
-            <div class="sec-title"> Proposed Zoning 2023 vs 2025</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <div class="yr-bar">
-        <button class="yr-btn on" id="lu_abs" onclick="setLUMode('abs')">ABSOLUTE</button>
-        <button class="yr-btn" id="lu_delta" onclick="setLUMode('delta')">DELTA</button>
-      </div>
-      <div class="sec-meta" id="s4meta">—</div>
-    </div>
-  </div>
-  <div class="g2">
-    <div class="card">
-      <div class="card-hd"><div class="card-title"><span class="card-title-dot" style="background:var(--sky);box-shadow:0 0 6px var(--sky)"></span>ZONE CODE DISTRIBUTION 2025</div></div>
-      <div class="card-body" style="padding:8px 14px;max-height:460px;overflow-y:auto;">
-        <div class="blist" id="zoneBars"></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-hd"><div class="card-title"><span class="card-title-dot" style="background:var(--gold);box-shadow:0 0 6px var(--gold)"></span>BUILDINGS PER LAND USE CATEGORY</div></div>
-      <div class="card-body"><canvas id="cvLU" style="display:block;width:100%;"></canvas></div>
-    </div>
-  </div>
-</div>
-
-
-
-<!-- ═══════════════════════════════════════════════
-     SECTION 6 — Map
-═══════════════════════════════════════════════ -->
-<div class="section">
-  <div class="sec-hd">
-    <div>
-            <div class="sec-title">Zoning Swipe: 2023 vs 2025</div>
-    </div>
-    <div class="sec-meta" id="maphint">Map loading after data…</div>
-  </div>
-  <div class="mapwrap">
-    <div id="mapDiv">
-      <div class="map-ph" id="mapPh">
-        <svg viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>
-        <p>SWIPE MAP LOADS AFTER DATA</p>
-      </div>
-    </div>
-    <div class="map-legend-bar" id="mapLegendBar" style="display:none;">
-      <div class="mleg mleg-left"><span class="mleg-yr">◀ 2023</span><span class="mleg-lbl">Master Plan Zones</span></div>
-      <div class="mleg-center">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8l-6-6-6 6M6 16l6 6 6-6"/></svg>
-        DRAG TO COMPARE
-      </div>
-      <div class="mleg mleg-right"><span class="mleg-lbl">Master Plan Zones</span><span class="mleg-yr">2025 ▶</span></div>
-    </div>
-    <div class="map-zoom-hint" id="mapZoomHint">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg>
-      ZOOM IN TO SEE BUILDING POINTS
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════
-     SECTION 7 — Table
-═══════════════════════════════════════════════ -->
-<div class="section">
-  <div class="sec-hd">
-    <div>
-            <div class="sec-title">Full Building Statistics</div>
-    </div>
-    <div class="sec-meta" id="s7meta">—</div>
-  </div>
-  <div class="card">
-    <div class="tbl-ctrl">
-      <span class="tbl-lbl">GROUP BY</span>
-      <select class="tbl-sel" id="tblGrp" onchange="buildTbl()">
-        <option value="province">Province</option>
-        <option value="district" selected>District</option>
-        <option value="sector">Sector</option>
-        <option value="cell">Cell</option>
-        <option value="village">Village</option>
-      </select>
-      <span class="tbl-lbl" style="margin-left:6px;">YEAR</span>
-      <select class="tbl-sel" id="tblYr" onchange="buildTbl()">
-        <option value="2025">2025</option><option value="2023">2023</option>
-      </select>
-      <input class="tbl-srch" id="tblQ" placeholder="Search area or zone…" oninput="filterTbl()">
-      <span class="tbl-lbl" id="tblMeta">—</span>
-      <button class="btn-dl" onclick="dlCSV()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>EXPORT CSV</button>
-    </div>
-    <div style="overflow-x:auto;max-height:480px;overflow-y:auto;">
-      <table><thead><tr>
-        <th onclick="sortTbl(0)">#</th>
-        <th onclick="sortTbl(1)">AREA</th>
-        <th onclick="sortTbl(2)">ZONE CODE</th>
-        <th onclick="sortTbl(3)">ZONE NAME</th>
-        <th onclick="sortTbl(4)">GEN LU</th>
-        <th onclick="sortTbl(5)">BUILDINGS ↕</th>
-        <th>SHARE</th>
-      </tr></thead>
-      <tbody id="tbody"></tbody></table>
-    </div>
-  </div>
-</div>
-
-</div><!-- /page -->
 
 <script>
-// ═══════════════════════════════════════════════════════════
-//  CONFIG & CONSTANTS
-// ═══════════════════════════════════════════════════════════
-const SVC='https://services7.arcgis.com/htgaiKX6RV2DDGgK/arcgis/rest/services/Buildings_Zoning/FeatureServer/0';
-const WEBMAP_ID='12fc4fba708c4c568b6d9227e9f83a1f';
-const F={district:'district',sector:'sector',cell:'cell',village:'village',province:'province',zone23:'zone_code_2023',zone25:'zone_code_2025',genlu23:'gen_lu_2023',genlu25:'gen_lu_2025',change:'change',chg_io:'change_io'};
+// ══════════════════════════════════════════════════════════════
+//  CONFIG — add remaining 6 service URLs below Kayonza
+// ══════════════════════════════════════════════════════════════
+const WEBMAP_ID = 'b6f2526893bc45f681b1581a568a5422';
+const ORG = 'https://services7.arcgis.com/htgaiKX6RV2DDGgK/arcgis/rest/services';
 
-const ZC={'R1A':'#ffe033','R1B':'#ffd580','R2':'#ffaa22','R3':'#ff7700','R4':'#ff4422','R1':'#ffcc44','RS':'#ffbbaa','C1':'#ff3377','C3':'#cc0044','C4':'#ff0066','A1':'#66bb22','A2':'#88cc33','T1':'#4477bb','T2':'#335588','T3':'#224477','T4':'#113366','F1':'#226611','F2':'#1d4a1b','F5':'#337722','ET':'#00cc88','I1':'#bb5500','I2':'#883300','I3':'#552200','PF1':'#1144bb','PF2':'#2255cc','PF3':'#3366dd','PF4':'#4477ee','PF5':'#5588ff','PF6':'#77aaff','PA':'#009944','W1B':'#0066aa','W2':'#0088cc','W3':'#00aadd','OS':'#225533','B1':'#334444','B2':'#445555','B4':'#556666','WB':'#004488','U':'#556677'};
-const ZN={'R1A':'Low Density Res.','R1B':'Rural Residential','R2':'Medium Density','R3':'Medium Expansion','R4':'High Density','R1':'Residential','RS':'Res. Special','C1':'Mixed Commercial','C3':'City Centre','C4':'Commercial','A1':'Agriculture','A2':'Agriculture 2','T1':'Road Reserve','T2':'Transport 2','T3':'Transport 3','T4':'Transport 4','F1':'Forest Reserve','F2':'Forest 2','F5':'Forest 5','ET':'Eco-Tourism','I1':'Light Industrial','I2':'Med. Industrial','I3':'Heavy Industrial','PF1':'Public Facility','PF2':'Pub. Facility 2','PF3':'Pub. Facility 3','PF4':'Pub. Facility 4','PF5':'Pub. Facility 5','PF6':'Pub. Facility 6','PA':'Protected Area','W1B':'Wetland','W2':'Wetland 2','W3':'Wetland 3','OS':'Open Space','B1':'Buffer Zone','B2':'Buffer 2','B4':'Buffer 4','WB':'Water Body','U':'Urban'};
-const GLC={'Residential':'#f0c060','Agriculture':'#78d890','Commercial':'#f06080','Transportation':'#48b8f0','Forest':'#226611','Public Facility':'#4477ee','Industrial':'#bb5500','Open Space':'#225533','Buffer':'#445555','Public Administration':'#009944','Wetland':'#0066aa','Utility':'#556677','Water Body':'#004488','Unclassified':'#5a8aaa'};
-const LZ=new Set(['R1A','R1B','R2','R1','A1','A2']);
+const CITIES = [
+  // ── Kayonza (confirmed URL)
+  { id:'kayonza',   label:'Kayonza',   color:'#00d4b8', area:'Eastern Province',
+    svc:`${ORG}/Building_Kayonza_urban/FeatureServer/0` },
 
-const PMAP={'Kigali City':['Kigali','Kicukiro','Gasabo'],'Eastern Province':['Bugesera','Nyagatare','Rwamagana','Kirehe','Gatsibo','Kayonza','Ngoma'],'Western Province':['Rubavu','Rusizi','Nyamasheke','Karongi','Rutsiro','Nyabihu'],'Northern Province':['Musanze','Gicumbi','Rulindo','Burera','Gakenke'],'Southern Province':['Nyanza','Ruhango','Muhanga','Kamonyi','Nyaruguru','Gisagara','Nyamagabe','Huye','Ngororero']};
-const ALL_DISTS=Object.values(PMAP).flat();
+  { id:'kirehe',    label:'Kirehe',    color:'#48b4f0', area:'Eastern Province',
+    svc:'https://services7.arcgis.com/htgaiKX6RV2DDGgK/arcgis/rest/services/Construction_Kirehe_Cities/FeatureServer/0' },
 
-// Seed data
-const SEED={
-  total:5826501,changed:503036,
-  districts:{'Kigali':739619,'Bugesera':309144,'Nyagatare':274795,'Gicumbi':250400,'Kamonyi':217947,'Rwamagana':217927,'Kirehe':216675,'Rulindo':202602,'Gatsibo':201644,'Musanze':200975,'Rubavu':200735,'Nyanza':193129,'Kayonza':190703,'Rusizi':189122,'Nyamasheke':185805,'Ngoma':183204,'Huye':178543,'Muhanga':172891,'Ngororero':168432,'Ruhango':162847,'Burera':158923,'Gakenke':154678,'Karongi':151234,'Rutsiro':148976,'Nyabihu':143512,'Nyaruguru':139876,'Gisagara':136542,'Nyamagabe':132187,'Kicukiro':118456,'Gasabo':95634},
-  zones25:{'A1':1970659,'R1B':1564258,'R1A':438815,'C1':360471,'T1':317022,'R2':301375,'R3':218106,'R1':80119,'RS':67453,'PF1':58874,'R4':57112,'F1':53409,'C3':41943,'A2':29867,'I1':26109,'OS':18432,'PF2':16782,'W1B':13421,'B1':12345,'T2':10234,'PF3':9876,'ET':8765,'PA':7654,'F2':6543,'I2':5432,'B2':4321,'PF4':3210,'T3':2987,'W2':2345,'U':1987,'C4':1765,'PF5':1543,'T4':1234,'WB':1123,'B4':987,'I3':876,'PF6':654,'F5':543,'W3':427},
-  zones23:{'A1':1730000,'R1B':1350000,'R1A':400000,'C1':310000,'T1':280000,'R2':260000,'R3':190000,'R1':70000,'RS':58000,'PF1':45000,'R4':48000,'F1':47000,'C3':36000,'A2':25000,'I1':25000,'OS':14000,'PF2':12000,'W1B':11000,'B1':10000,'T2':8500,'PF3':8000,'ET':7000,'PA':6500,'F2':5500,'I2':4800,'B2':3800,'PF4':2900,'T3':2600,'W2':2100,'U':1800,'C4':1600,'PF5':1400,'T4':1100,'WB':1000,'B4':880,'I3':800,'PF6':600,'F5':490,'W3':400},
-  genlu25:{'Residential':2727238,'Agriculture':2000526,'Commercial':402793,'Transportation':350146,'Forest':102910,'Public Facility':101561,'Industrial':34126,'Open Space':34060,'Buffer':33705,'Public Administration':13998,'Wetland':9510,'Utility':3882,'Unclassified':11619,'Water Body':427},
-  genlu23:{'Residential':2608427,'Agriculture':1759336,'Commercial':380522,'Transportation':332398,'Forest':100334,'Public Facility':87173,'Industrial':34905,'Open Space':26945,'Buffer':30218,'Public Administration':21317,'Wetland':8012,'Utility':4088,'Unclassified':432399,'Water Body':427},
-  sectors:{'Kacyiru':45234,'Kimironko':42156,'Gisozi':38920,'Remera':36745,'Kicukiro':34567,'Gatenga':32109,'Gahanga':30876,'Kagarama':29543,'Masaka':27890,'Batsinda':26432,'Gitega':24987,'Nyamirambo':23654,'Gitikinyoni':22341,'Kimisagara':21098,'Kabuye':19876,'Rusororo':18654,'Kanombe':17432,'Ndera':16210,'Jabana':15089,'Bugesera':14567},
-  cells:{'Kabeza':8234,'Gahanga':7856,'Kicukiro':7432,'Kimironko':7109,'Kacyiru':6876,'Remera':6543,'Gisozi':6210,'Gatenga':5987,'Masaka':5654,'Kagarama':5321},
-  villages:{'Amahoro':2345,'Inzira':2109,'Ubumwe':1987,'Umurinzi':1876,'Urugwiro':1765,'Agatare':1654,'Akabahizi':1543,'Akagarama':1432,'Akagera':1321,'Akajevejeve':1210}
+  { id:'nyagatare', label:'Nyagatare', color:'#a080f0', area:'Eastern Province',
+    svc:'https://services7.arcgis.com/htgaiKX6RV2DDGgK/arcgis/rest/services/Construction_Nyagatare_Cities/FeatureServer/0' },
+
+  { id:'huye',      label:'Huye',      color:'#f0c060', area:'Southern Province',
+    svc:'https://services7.arcgis.com/htgaiKX6RV2DDGgK/arcgis/rest/services/Buildings_Huye_Cities/FeatureServer/0' },
+
+  { id:'rubavu',    label:'Rubavu',    color:'#78d890', area:'Western Province',
+    svc:'https://services7.arcgis.com/htgaiKX6RV2DDGgK/arcgis/rest/services/Buildings_Rubavu_Cities/FeatureServer/0' },
+
+  { id:'musanze',   label:'Musanze',   color:'#f06080', area:'Northern Province',
+    svc:'https://services7.arcgis.com/htgaiKX6RV2DDGgK/arcgis/rest/services/Building_Musanze_Cities/FeatureServer/0' },
+
+  { id:'rusizi',    label:'Rusizi',    color:'#f08040', area:'Western Province',
+    svc:'https://services7.arcgis.com/htgaiKX6RV2DDGgK/arcgis/rest/services/Buildings_Rusizi_Cities/FeatureServer/0' },
+];
+
+// ── legal_t field values
+const LEGAL_KEYS = ['Legal','Illegal'];
+const LEGAL = {
+  'Legal':   { color:'#00d4b8' },
+  'Illegal': { color:'#f06080' },
 };
 
-// Live data
-let D={...JSON.parse(JSON.stringify(SEED)),provinces:{}};
-function buildProvs(d){const p={};for(const[k,ds]of Object.entries(PMAP)){const t=ds.reduce((s,x)=>s+(d[x]||0),0);if(t>0)p[k]=t;}return p;}
-// State
-let filters={province:'',district:'',sector:'',cell:'',village:'',zone:'',year:''};
-let s1lvl='province',s1yr='2025';
-let s3lvl='province',s3exp=false;
-let luMode='abs';
-let tblRows=[],filtTbl=[],sCol=5,sDir=-1;
+// ── Data store
+const D = {};
+CITIES.forEach(c => {
+  D[c.id] = {
+    total:0, loaded:false,
+    byLegal:{}, byLegalYear:{'2023':{},'2025':{}},
+    byZoneIllegal:{},
+    bySector:{},
+    byCell:{},
+    byVillage:{},
+  };
+});
 
-// ═══════════════════════════════════════════════════════════
-//  HELPERS
-// ═══════════════════════════════════════════════════════════
-const $=id=>document.getElementById(id);
-const fmt=n=>(n||0).toLocaleString();
-const fmtK=v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(1)+'K':String(v||0);
-const pct=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'—';
-const zc=z=>ZC[z]||'#5a8aaa';
-const ztc=z=>LZ.has(z)?'#0b1a2b':'rgba(255,255,255,.9)';
-const gc=g=>GLC[g]||'#5a8aaa';
-const esc=v=>String(v).replace(/'/g,"''");
+let allYr = 'both';
+const cityYr  = {}; CITIES.forEach(c => cityYr[c.id]  = 'both');
+const cityAdm = {}; CITIES.forEach(c => cityAdm[c.id] = 'sector');
 
-function setStatus(t){const b=$('sbar'),s=$('stxt');if(!b||!s)return;if(t){b.classList.remove('gone');s.textContent=t.toUpperCase();}else b.classList.add('gone');}
+const $ = id => document.getElementById(id);
+const fmt  = n => (n||0).toLocaleString();
+const fmtK = v => v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(1)+'K':String(v||0);
+const pct  = (a,b) => b>0?(a/b*100).toFixed(1)+'%':'—';
+const pctN = (a,b) => b>0?parseFloat((a/b*100).toFixed(1)):0;
 
-function buildWhere(){
-  const c=[];
-  if(filters.province) c.push(`${F.district} IN (${(PMAP[filters.province]||[]).map(d=>`'${esc(d)}'`).join(',')})`);
-  if(filters.district) c.push(`${F.district}='${esc(filters.district)}'`);
-  if(filters.sector)   c.push(`${F.sector}='${esc(filters.sector)}'`);
-  if(filters.cell)     c.push(`${F.cell}='${esc(filters.cell)}'`);
-  if(filters.village)  c.push(`${F.village}='${esc(filters.village)}'`);
-  if(filters.zone)     c.push(`(${F.zone25}='${esc(filters.zone)}' OR ${F.zone23}='${esc(filters.zone)}')`);
-  return c.length?c.join(' AND '):'1=1';
+// ── Legal key helpers
+const LK_PERMIT  = 'Legal';
+const LK_ILLEGAL = 'Illegal';
+
+// ══════════════════════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════════════════════
+function buildTabs(){
+  const bar = $('tabBar');
+  CITIES.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className='tab'; btn.id=`tab_${c.id}`;
+    btn.onclick=()=>showTab(c.id);
+    btn.innerHTML=`
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="${c.color}" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      ${c.label}
+      <span class="tbadge" id="badge_${c.id}">—</span>`;
+    bar.appendChild(btn);
+  });
 }
 
-// ═══════════════════════════════════════════════════════════
-//  FETCH — POST
-// ═══════════════════════════════════════════════════════════
-async function qCount(where,groupBy,ms=28000){
-  // Statistical GROUP BY queries — paginate to bypass server record limits
+function showTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.city-view').forEach(v=>v.classList.remove('on'));
+  $(`tab_${id}`)?.classList.add('on');
+  $(`view_${id}`)?.classList.add('on');
+  if(id!=='all') initCityMap(id);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BUILD CITY HTML
+// ══════════════════════════════════════════════════════════════
+function buildCityViews(){
+  const container=$('cityViews');
+  CITIES.forEach(c=>{
+    const div=document.createElement('div');
+    div.className='city-view'; div.id=`view_${c.id}`;
+    div.innerHTML=`
+      <div class="city-hd">
+        <div class="city-icon" style="background:${c.color}18;border:1px solid ${c.color}44;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${c.color}" stroke-width="1.5">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <div>
+          <div class="city-name">${c.label}</div>
+          <div class="city-sub" id="csub_${c.id}">${c.area.toUpperCase()} · LOADING…</div>
+        </div>
+        <div class="hd-right">
+          <div class="yr-bar">
+            <button class="yr-btn on"  id="yrB_${c.id}"  onclick="setCityYr('${c.id}','both')">BOTH</button>
+            <button class="yr-btn"     id="yr23_${c.id}" onclick="setCityYr('${c.id}','2023')">2023</button>
+            <button class="yr-btn"     id="yr25_${c.id}" onclick="setCityYr('${c.id}','2025')">2025</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── KPI CARDS ── -->
+      <div class="kpi-row" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kcard c-teal">
+          <div class="kcard-lbl">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Total Detected
+          </div>
+          <div class="kcard-val" style="color:${c.color}" id="kTot_${c.id}">—</div>
+          <div class="kcard-sub" id="kTotS_${c.id}">Buildings analysed</div>
+        </div>
+        <div class="kcard c-lime">
+          <div class="kcard-lbl">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--lime)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Legal — With Permit
+          </div>
+          <div class="kcard-val" style="color:var(--lime)" id="kPermit_${c.id}">—</div>
+          <div class="kcard-sub" id="kPermitS_${c.id}">Verified compliant</div>
+        </div>
+        <div class="kcard c-rose">
+          <div class="kcard-lbl">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Illegal — Without Permit
+          </div>
+          <div class="kcard-val" style="color:var(--rose)" id="kIll_${c.id}">—</div>
+          <div class="kcard-sub" id="kIllS_${c.id}">Violations detected</div>
+        </div>
+        <div class="kcard c-sky">
+          <div class="kcard-lbl">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--sky)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Compliance Rate
+          </div>
+          <div class="kcard-val" style="color:var(--rose)" id="kRate_${c.id}">—</div>
+          <div class="kcard-sub" id="kRateS_${c.id}">—</div>
+        </div>
+      </div>
+
+      <!-- ── SECTION: ILLEGAL BY ZONE ── -->
+      <div class="sec-label">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 2 17 12 22 22 17 22 7 12 2"/></svg>
+        Illegal Buildings by Zone Code
+      </div>
+      <div class="grid-2 mb18">
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title"><div class="cdot" style="background:var(--rose)"></div>Without Permit — Zone Distribution</div>
+            <div class="card-meta" id="zmeta_${c.id}">—</div>
+          </div>
+          <div class="card-body" id="zoneBars_${c.id}"></div>
+        </div>
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title"><div class="cdot" style="background:var(--rose)"></div>Top Zones by Illegal Count</div>
+            <div class="card-meta" id="ztop_${c.id}">top 10 zones</div>
+          </div>
+          <div class="card-body" id="zoneTop_${c.id}"></div>
+        </div>
+      </div>
+
+      <!-- ── SECTION: BUILDINGS BY LEGALITY STATUS ── -->
+      <div class="sec-label">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Buildings by Legality Status
+      </div>
+
+      <!-- permit bars 2023 / 2025 + admin breakdown -->
+      <div class="grid-21 mb18">
+        <!-- Permit status bars by year -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title"><div class="cdot" style="background:${c.color}"></div>Permit Status — 2023 vs 2025</div>            <div class="card-meta" id="pmeta_${c.id}">—</div>
+          </div>
+          <div class="card-body">
+            <div style="font-family:var(--mono);font-size:7px;letter-spacing:1.5px;color:var(--sky);
+              margin-bottom:7px;display:flex;align-items:center;gap:5px;">
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              2023
+            </div>
+            <div id="pb23_${c.id}"></div>
+            <div style="font-family:var(--mono);font-size:7px;letter-spacing:1.5px;color:var(--teal);
+              margin:12px 0 7px;display:flex;align-items:center;gap:5px;">
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              2025
+            </div>
+            <div id="pb25_${c.id}"></div>
+          </div>
+        </div>
+
+        <!-- Admin level breakdown -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title"><div class="cdot" style="background:var(--violet)"></div>By Administrative Level</div>
+            <div class="lvl-bar" id="lvl_${c.id}">
+              <button class="lvl-btn on"  onclick="setAdm('${c.id}','sector')" >Sector</button>
+              <button class="lvl-btn"     onclick="setAdm('${c.id}','cell')"   >Cell</button>
+              <button class="lvl-btn"     onclick="setAdm('${c.id}','village')">Village</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="adm-scroll" id="admBars_${c.id}"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MAP ── -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><div class="cdot" style="background:${c.color}"></div>${c.label} — Building Permit Map</div>
+          <div style="display:flex;gap:6px;">
+            <span class="mpill mp-legal"><svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> LEGAL</span>
+            <span class="mpill mp-illegal"><svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> ILLEGAL</span>
+          </div>
+        </div>
+        <div>
+          <div id="mapDiv_${c.id}" style="width:100%;height:380px;background:var(--bg2);"></div>
+          <div class="map-pills"><span class="map-hint" id="mhint_${c.id}">Loading map…</span></div>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DATA FETCH
+// ══════════════════════════════════════════════════════════════
+async function qStat(svc,where,groupBy){
   const body=new URLSearchParams();
-  body.set('where',where);
+  body.set('where',where||'1=1');
   body.set('groupByFieldsForStatistics',groupBy);
   body.set('outStatistics','[{"statisticType":"count","onStatisticField":"OBJECTID","outStatisticFieldName":"cnt"}]');
   body.set('returnGeometry','false');
   body.set('f','json');
-  const ctrl=new AbortController();
-  const tid=setTimeout(()=>ctrl.abort(),ms);
   try{
-    const r=await fetch(SVC+'/query',{method:'POST',body,signal:ctrl.signal,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    const r=await fetch(svc+'/query',{method:'POST',body,
+      headers:{'Content-Type':'application/x-www-form-urlencoded'}});
     const j=await r.json();
-    if(j.error)throw new Error(j.error.message);
+    if(j.error) throw new Error(j.error.message);
     return j.features||[];
-  }finally{clearTimeout(tid);}
+  }catch(e){console.warn('qStat',groupBy,e.message);return[];}
 }
 
+async function loadCity(city){
+  const d=D[city.id];
+  setStatus(`${city.label} · permit status…`);
 
-async function qVals(field,where){
-  const body=new URLSearchParams();
-  body.set('where',where||'1=1');body.set('outFields',field);body.set('returnDistinctValues','true');
-  body.set('returnGeometry','false');body.set('orderByFields',field);body.set('resultRecordCount','500');body.set('f','json');
-  const ctrl=new AbortController();const tid=setTimeout(()=>ctrl.abort(),28000);
-  try{const r=await fetch(SVC+'/query',{method:'POST',body,signal:ctrl.signal,headers:{'Content-Type':'application/x-www-form-urlencoded'}});const j=await r.json();if(j.error)throw new Error(j.error.message);return(j.features||[]).map(f=>f.attributes[field]).filter(v=>v!=null&&String(v).trim()!=='').sort();}
-  finally{clearTimeout(tid);}
+  // 1) legal_t × year_t
+  const r1=await qStat(city.svc,'1=1','legal_t,year_t');
+  r1.forEach(f=>{
+    const lt=f.attributes.legal_t||'Unknown';
+    const yr=String(f.attributes.year_t||'');
+    const cnt=f.attributes.cnt||0;
+    d.byLegal[lt]=(d.byLegal[lt]||0)+cnt;
+    if(!d.byLegalYear[yr]) d.byLegalYear[yr]={};
+    d.byLegalYear[yr][lt]=(d.byLegalYear[yr][lt]||0)+cnt;
+  });
+  d.total=Object.values(d.byLegal).reduce((s,v)=>s+v,0);
+  setStatus(`${city.label} · zone analysis…`);
+  const illWhere=`legal_t='Illegal'`;
+  const r2=await qStat(city.svc,illWhere,'zone_code');
+  r2.forEach(f=>{
+    const zc=f.attributes.zone_code||'Unknown';
+    const cnt=f.attributes.cnt||0;
+    d.byZoneIllegal[zc]=(d.byZoneIllegal[zc]||0)+cnt;
+  });
+
+  // 3) sector × legal_t
+  setStatus(`${city.label} · sectors…`);
+  const r3=await qStat(city.svc,'1=1','sector,legal_t');
+  r3.forEach(f=>{
+    const sec=f.attributes.sector||'Unknown';
+    const lt=f.attributes.legal_t||'Unknown';
+    const cnt=f.attributes.cnt||0;
+    if(!d.bySector[sec]) d.bySector[sec]={};
+    d.bySector[sec][lt]=(d.bySector[sec][lt]||0)+cnt;
+  });
+
+  // 4) cell × legal_t
+  setStatus(`${city.label} · cells…`);
+  const r4=await qStat(city.svc,'1=1','cell,legal_t');
+  r4.forEach(f=>{
+    const cel=f.attributes.cell||'Unknown';
+    const lt=f.attributes.legal_t||'Unknown';
+    const cnt=f.attributes.cnt||0;
+    if(!d.byCell[cel]) d.byCell[cel]={};
+    d.byCell[cel][lt]=(d.byCell[cel][lt]||0)+cnt;
+  });
+
+  // 5) village × legal_t
+  setStatus(`${city.label} · villages…`);
+  const r5=await qStat(city.svc,'1=1','village,legal_t');
+  r5.forEach(f=>{
+    const vil=f.attributes.village||'Unknown';
+    const lt=f.attributes.legal_t||'Unknown';
+    const cnt=f.attributes.cnt||0;
+    if(!d.byVillage[vil]) d.byVillage[vil]={};
+    d.byVillage[vil][lt]=(d.byVillage[vil][lt]||0)+cnt;
+  });
+
+  d.loaded=true;
+  $(`badge_${city.id}`).textContent=fmtK(d.total);
+  renderCity(city);
+  renderAllView();
+  updateGlobalKpis();
 }
 
-// ═══════════════════════════════════════════════════════════
-//  LIVE LOAD
-// ═══════════════════════════════════════════════════════════
-async function loadLive(){
-  const where=buildWhere();
-  const label=filters.district||filters.sector||filters.province||'RWANDA';
-  const chgW=where==='1=1'?`${F.chg_io}=1`:where+` AND ${F.chg_io}=1`;
-
-  // Districts
-  setStatus(label+' · districts…');
-  try{
-    const rows=await qCount(where,F.district);
-    D.districts={};rows.forEach(f=>{const d=f.attributes[F.district];if(d)D.districts[d]=(D.districts[d]||0)+f.attributes.cnt;});
-    D.provinces=buildProvs(D.districts);
-    D.total=Object.values(D.districts).reduce((s,v)=>s+v,0);
-    updateMasthead();renderS1();renderStackSection();renderS3();
-    fillSel('fDist',Object.keys(D.districts).sort());
-    fillSel('fProv',Object.keys(D.provinces).sort());
-  }catch(e){console.warn('districts:',e.message);}
-
-  // Zones 2025
-  setStatus(label+' · zones 2025…');
-  try{
-    const rows=await qCount(where,F.zone25);
-    D.zones25={};rows.forEach(f=>{const z=f.attributes[F.zone25];if(z)D.zones25[z]=(D.zones25[z]||0)+f.attributes.cnt;});
-    renderS1();renderStackSection();renderZoneBars();buildTbl();
-    fillSel('fZone',[...new Set([...Object.keys(D.zones25),...Object.keys(D.zones23||SEED.zones23)].sort())]);
-  }catch(e){console.warn('zones25:',e.message);}
-
-  // Zones 2023
-  setStatus(label+' · zones 2023…');
-  try{
-    const rows=await qCount(where,F.zone23);
-    D.zones23={};rows.forEach(f=>{const z=f.attributes[F.zone23];if(z)D.zones23[z]=(D.zones23[z]||0)+f.attributes.cnt;});
-    renderS1();
-  }catch(e){console.warn('zones23:',e.message);}
-
-  // Gen LU
-  setStatus(label+' · land use…');
-  try{
-    const[r25,r23]=await Promise.all([qCount(where,F.genlu25),qCount(where,F.genlu23)]);
-    D.genlu25={};r25.forEach(f=>{const g=f.attributes[F.genlu25]||'Unclassified';D.genlu25[g]=(D.genlu25[g]||0)+f.attributes.cnt;});
-    D.genlu23={};r23.forEach(f=>{const g=f.attributes[F.genlu23]||'Unclassified';D.genlu23[g]=(D.genlu23[g]||0)+f.attributes.cnt;});
-    renderLU();updateMasthead();
-  }catch(e){console.warn('genlu:',e.message);}
-
-  // Changes
-  setStatus(label+' · changes…');
-  try{
-    const cd=await qCount(chgW,F.district);
-    D.changed=cd.reduce((s,f)=>s+f.attributes.cnt,0);
-    updateMasthead();
-  }catch(e){console.warn('changes:',e.message);}
-
-  // Sectors/Cells/Villages — counts + dropdown values
-  setStatus(label+' · sectors…');
-  try{
-    const secRows=await qCount(where,F.sector);
-    D.sectors={};
-    secRows.forEach(f=>{const s=f.attributes[F.sector];if(s)D.sectors[s]=(D.sectors[s]||0)+f.attributes.cnt;});
-    fillSel('fSec',Object.keys(D.sectors).sort());
-    renderS1();renderStackSection();renderS3();
-  }catch(e){console.warn('sectors:',e.message);}
-
-  setStatus(label+' · cells…');
-  try{
-    const cellRows=await qCount(where,F.cell);
-    D.cells={};
-    cellRows.forEach(f=>{const c=f.attributes[F.cell];if(c)D.cells[c]=(D.cells[c]||0)+f.attributes.cnt;});
-    fillSel('fCell',Object.keys(D.cells).sort());
-    renderS1();renderStackSection();renderS3();
-  }catch(e){console.warn('cells:',e.message);}
-
-  setStatus(label+' · villages…');
-  try{
-    const villRows=await qCount(where,F.village);
-    D.villages={};
-    villRows.forEach(f=>{const v=f.attributes[F.village];if(v)D.villages[v]=(D.villages[v]||0)+f.attributes.cnt;});
-    fillSel('fVill',Object.keys(D.villages).sort());
-    renderS1();renderStackSection();renderS3();
-    buildTbl();
-  }catch(e){console.warn('villages:',e.message);buildTbl();}
-
-  setStatus(null);
-  initMap();
+// ══════════════════════════════════════════════════════════════
+//  RENDER CITY
+// ══════════════════════════════════════════════════════════════
+function setCityYr(id,yr){
+  cityYr[id]=yr;
+  ['B','23','25'].forEach(s=>{
+    const b=$(`yr${s}_${id}`);
+    if(b) b.classList.toggle('on',
+      (s==='B'&&yr==='both')||(s==='23'&&yr==='2023')||(s==='25'&&yr==='2025'));
+  });
+  renderCity(CITIES.find(c=>c.id===id));
 }
 
-// ═══════════════════════════════════════════════════════════
-//  MASTHEAD UPDATE
-// ═══════════════════════════════════════════════════════════
-function updateMasthead(){
-  const tot=D.total||SEED.total, chg=D.changed||SEED.changed;
-  const gl=D.genlu25||SEED.genlu25;
-  $('mTot').textContent=fmtK(tot);
-  $('mTotSub').textContent=filters.district||filters.province||'All Rwanda';
-  $('mChg').textContent=fmtK(chg);
-  $('mChgSub').textContent=pct(chg,tot)+' reclassified';
-  $('mRes').textContent=fmtK(gl['Residential']||0);
-  $('mAgr').textContent=fmtK(gl['Agriculture']||0);
-  $('mRate').textContent=pct(chg,tot);
+function setAdm(id,lvl){
+  cityAdm[id]=lvl;
+  const bar=$(`lvl_${id}`);
+  if(bar) bar.querySelectorAll('.lvl-btn').forEach(b=>{
+    b.classList.toggle('on',b.textContent.toLowerCase()===lvl);
+  });
+  renderAdmBars(id);
 }
 
-// ═══════════════════════════════════════════════════════════
-//  SECTION 1 — Stacked zone chart by admin level
-// ═══════════════════════════════════════════════════════════
-function setYr1(y){
-  s1yr=y;
-  ['yr1_25','yr1_23','yr1b_25','yr1b_23'].forEach(id=>{const e=$(id);if(e)e.classList.toggle('on',(y==='2025'&&id.endsWith('25'))||(y==='2023'&&id.endsWith('23')));});
-  renderS1();renderStackSection();
+function getLegal(id,lt){
+  const d=D[id]; const yr=cityYr[id];
+  if(yr==='both') return d.byLegal[lt]||0;
+  return d.byLegalYear[yr]?.[lt]||0;
 }
 
-function renderS1(){
-  const zoneData=s1yr==='2025'?(D.zones25||SEED.zones25):(D.zones23||SEED.zones23);
-  const items=Object.entries(zoneData).map(([z,c])=>({z,c})).sort((a,b)=>b.c-a.c);
-  const max=items[0]?.c||1;
-  const tot=items.reduce((s,x)=>s+x.c,0);
-  const s1t=$('s1tot');if(s1t)s1t.textContent=fmt(tot)+' BUILDINGS';
-  const s1m=$('s1meta');if(s1m)s1m.textContent=`${items.length} zone codes · ${s1yr}`;
-  $('s1ZoneBars').innerHTML=items.map(({z,c})=>{
-    const w=(c/max*100).toFixed(1),col=zc(z),tc=ztc(z),act=filters.zone===z;
-    return `<div class="brow ${act?'on':''}" onclick="zClick('${z}')" style="padding:4px 6px 4px 8px;">
-      <span class="blbl" style="width:46px;" title="${z}">${z}</span>
-      <div class="btrack"><div class="bfill" style="width:${w}%;background:${col};">
-        <span style="color:${tc}">${fmtK(c)}</span>
-      </div></div>
+function renderCity(city){
+  const id=city.id; const d=D[id];
+  if(!d.loaded) return;
+
+  const permit = getLegal(id,LK_PERMIT);
+  const ill    = getLegal(id,LK_ILLEGAL);
+  const tot    = permit+ill||1;
+  const yr     = cityYr[id];
+  const secCnt = Object.keys(d.bySector).length;
+
+  // subtitle
+  $(`csub_${id}`).textContent=
+    `${city.area.toUpperCase()} · ${secCnt} SECTORS · ${fmt(tot)} BUILDINGS · ${yr==='both'?'2023 & 2025':yr}`;
+
+  // KPIs
+  $(`kTot_${id}`).textContent    = fmtK(tot);
+  $(`kTotS_${id}`).textContent   = yr==='both'?'2023 & 2025':yr;
+  $(`kPermit_${id}`).textContent = fmtK(permit);
+  $(`kPermitS_${id}`).textContent= `${pct(permit,tot)} of total`;
+  $(`kIll_${id}`).textContent    = fmtK(ill);
+  $(`kIllS_${id}`).textContent   = `${pct(ill,tot)} violations`;
+  $(`kRate_${id}`).textContent   = pct(permit,permit+ill);
+  $(`kRateS_${id}`).textContent  = `${fmt(permit)} of ${fmt(permit+ill)} assessed`;
+
+  // Permit bars by year
+  $(`pmeta_${id}`).textContent=`${fmt(tot)} buildings`;
+  renderPermitBars(`pb23_${id}`,d.byLegalYear['2023']||{});
+  renderPermitBars(`pb25_${id}`,d.byLegalYear['2025']||{});
+
+  // Zone illegal bars
+  renderZoneBars(id);
+
+  // Admin breakdown
+  renderAdmBars(id);
+}
+
+function renderPermitBars(cid,data){
+  const c=$(cid); if(!c) return;
+  const tot=LEGAL_KEYS.reduce((s,lt)=>s+(data[lt]||0),0)||1;
+  c.innerHTML=LEGAL_KEYS.map(lt=>{
+    const cnt=data[lt]||0;
+    const w=pctN(cnt,tot);
+    const col=LEGAL[lt]?.color||'#5a8aaa';
+    const icon=lt.includes('Permit')&&!lt.includes('Illegal')
+      ?`<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
+      :lt.includes('Illegal')
+      ?`<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+      :`<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+    return `<div class="pbar-row">
+      <span class="pbar-lbl" style="color:${col};">${icon}&nbsp;${lt}</span>
+      <div class="pbar-track">
+        <div class="pbar-fill" style="width:${w}%;background:${col};">
+          <span class="pbar-cnt">${fmtK(cnt)}</span>
+        </div>
+      </div>
+      <span class="pbar-pct">${pct(cnt,tot)}</span>
     </div>`;
   }).join('');
 }
 
-function getAdminData(lvl){
-  const m={province:D.provinces,district:D.districts,sector:D.sectors,cell:D.cells,village:D.villages};
-  return m[lvl]||{};
-}
-function setLvl1(t){
-  s1lvl=t;
-  document.querySelectorAll('#lvl1 .lvl-btn').forEach(b=>b.classList.toggle('on',b.textContent.toLowerCase().trim()===t.toLowerCase()));
-  renderStackSection();
-}
-function renderStackSection(){
-  renderStackedChart('cv1','s1wrap','tt1',s1lvl,s1yr,'district');
+function renderZoneBars(id){
+  const d=D[id];
+  const zc=$(`zoneBars_${id}`);
+  const zt=$(`zoneTop_${id}`);
+  if(!zc||!zt) return;
+
+  const items=Object.entries(d.byZoneIllegal).sort((a,b)=>b[1]-a[1]);
+  const totalIll=items.reduce((s,[,v])=>s+v,0)||1;
+  $(`zmeta_${id}`).textContent=`${items.length} zones · ${fmt(totalIll)} illegal`;
+
+  // Left: proportional bars (top 12)
+  const max=items[0]?.[1]||1;
+  zc.innerHTML=items.slice(0,12).map(([zcode,cnt])=>{
+    const w=pctN(cnt,max);
+    const pw=pctN(cnt,totalIll);
+    return `<div class="zbar-row">
+      <span class="zbar-code">${zcode}</span>
+      <div class="zbar-track">
+        <div class="zbar-fill" style="width:${w}%;">
+          <span class="zbar-lbl">${fmtK(cnt)}</span>
+        </div>
+      </div>
+      <span class="zbar-val">${pw.toFixed(1)}%</span>
+    </div>`;
+  }).join('');
+
+  // Right: top 10 ranked list with counts
+  zt.innerHTML=items.slice(0,10).map(([zcode,cnt],i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--bd);">
+      <span style="font-family:var(--mono);font-size:8px;color:var(--ink3);width:16px;">${i+1}</span>
+      <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--rose);width:44px;">${zcode}</span>
+      <div style="flex:1;height:10px;background:var(--bg3);border-radius:2px;overflow:hidden;">
+        <div style="width:${pctN(cnt,max)}%;height:100%;background:#f06080cc;border-radius:2px;"></div>
+      </div>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--ink2);width:44px;text-align:right;">${fmtK(cnt)}</span>
+    </div>`).join('');
 }
 
-function niceStep(m,n){const r=m/n;const g=Math.pow(10,Math.floor(Math.log10(r||1)));const x=r/g;return(x<1.5?1:x<3?2:x<7?5:10)*g;}
+function renderAdmBars(id){
+  const d=D[id];
+  const c=$(`admBars_${id}`); if(!c) return;
+  const lvl=cityAdm[id]||'sector';
+  const src=lvl==='sector'?d.bySector:lvl==='cell'?d.byCell:d.byVillage;
+  const items=Object.entries(src).map(([name,lts])=>{
+    const tot=Object.values(lts).reduce((s,v)=>s+v,0);
+    return{name,lts,tot};
+  }).sort((a,b)=>b.tot-a.tot);
 
-function renderStackedChart(cvId,wrapId,ttId,lvl,yr,filterKey){
-  const cv=$(cvId),wrap=$(wrapId),tt=$(ttId);
-  if(!cv||!wrap)return;
-  const dpr=window.devicePixelRatio||1;
-  const areaData=getAdminData(lvl);
-  const zoneData=yr==='2025'?(D.zones25||SEED.zones25):(D.zones23||SEED.zones23);
-  const allAreas=Object.entries(areaData).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-  const areas=allAreas.slice(0,40); // cap at 40 for readability
-  if(!areas.length){cv.width=0;cv.height=0;return;}
+  const max=items[0]?.tot||1;
+  c.innerHTML=items.slice(0,30).map(({name,lts,tot})=>{
+    const permit=lts[LK_PERMIT]||0;
+    const ill=lts[LK_ILLEGAL]||0;
+    const wP=pctN(permit,max); const wI=pctN(ill,max);
+    const illPct=pctN(ill,permit+ill);
+    const illCol=illPct>50?'var(--rose)':illPct>25?'var(--gold)':'var(--lime)';
+    return `<div class="adm-row">
+      <span class="adm-name" title="${name}">${name}</span>
+      <div class="adm-stacked">
+        <div class="adm-seg" style="width:${wP}%;background:#00d4b8cc;"></div>
+        <div class="adm-seg" style="width:${wI}%;background:#f06080cc;"></div>
+      </div>
+      <span class="adm-total">${fmtK(tot)}</span>
+      <span class="adm-illpct" style="color:${illCol};">${illPct.toFixed(0)}%</span>
+    </div>`;
+  }).join('');
 
-  const topZ=Object.entries(zoneData).sort((a,b)=>b[1]-a[1]).slice(0,14).map(([z])=>z);
-  const totZ=topZ.reduce((s,z)=>s+(zoneData[z]||0),0);
-  const M={t:24,r:12,b:72,l:52};
-  const avail = wrap.offsetWidth || wrap.parentElement?.offsetWidth || wrap.closest('.card-body')?.offsetWidth || window.innerWidth - 120 || 900;
-  const BW=Math.max(14,Math.min(50,Math.floor((avail-M.l-M.r)/(areas.length+1))-5));
-  const GAP=5,CH=320;
-  const CW=Math.max(avail,(BW+GAP)*areas.length+M.l+M.r+GAP*2);
-  cv.width=CW*dpr;cv.height=CH*dpr;cv.style.width=CW+'px';cv.style.height=CH+'px';
-  wrap.style.overflowX=CW>avail?'auto':'hidden';
-  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,CW,CH);
-  const plotW=CW-M.l-M.r,plotH=CH-M.t-M.b;
-  const maxV=Math.max(...areas.map(([,v])=>v))||1;
-  const step=niceStep(maxV,5),yMax=Math.ceil(maxV/step)*step;
-  const yPx=v=>M.t+plotH-(v/yMax)*plotH;
-  for(let v=0;v<=yMax;v+=step){
-    const y=yPx(v);
-    ctx.strokeStyle=v===0?'rgba(255,255,255,.1)':'rgba(255,255,255,.04)';ctx.lineWidth=v===0?1:.5;
-    ctx.beginPath();ctx.moveTo(M.l,y);ctx.lineTo(CW-M.r,y);ctx.stroke();
-    ctx.font='8px JetBrains Mono,monospace';ctx.fillStyle='#9dc4e0';ctx.textAlign='right';
-    ctx.fillText(fmtK(v),M.l-5,y+3);
-  }
-  const hits=[];
-  areas.forEach(([l,tot],i)=>{
-    const x=M.l+GAP+(BW+GAP)*i;let sy=yPx(0);
-    topZ.forEach((z,zi)=>{
-      const share=(zoneData[z]||0)/Math.max(totZ,1);
-      const cnt=Math.round(tot*share);
-      const sh=(cnt/yMax)*plotH;
-      ctx.fillStyle=zc(z);
-      ctx.beginPath();
-      if(zi===topZ.length-1)try{ctx.roundRect(x,sy-sh,BW,sh,[3,3,0,0]);}catch{ctx.rect(x,sy-sh,BW,sh);}
-      else ctx.rect(x,sy-sh,BW,sh);
-      ctx.fill();
-      hits.push({x,y:sy-sh,w:BW,h:sh,l,z,cnt});sy-=sh;
-    });
-    const act=filters[filterKey]===l||filters['district']===l;
-    ctx.save();ctx.translate(x+BW/2,CH-M.b+10);ctx.rotate(-Math.PI/4);
-    ctx.textAlign='right';ctx.font=(act?'700':'400')+' 9px JetBrains Mono,monospace';
-    ctx.fillStyle=act?'#00d4b8':'#7ba4c4';
-    ctx.fillText(l.length>13?l.slice(0,12)+'…':l,0,0);ctx.restore();
+  // Update header meta
+  const hd=document.querySelector(`#view_${id} .card-meta[id="smeta_${id}"]`);
+  // set via data-bound element if exists
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ALL VIEW
+// ══════════════════════════════════════════════════════════════
+function setAllYr(yr){
+  allYr=yr;
+  document.querySelectorAll('#allYrBar .yr-btn').forEach(b=>{
+    b.classList.toggle('on',
+      (b.textContent==='BOTH'&&yr==='both')||
+      (b.textContent==='2023'&&yr==='2023')||
+      (b.textContent==='2025'&&yr==='2025'));
   });
-  // Legend
-  let lx=M.l;
-  topZ.forEach(z=>{
-    if(lx>CW-80)return;
-    ctx.fillStyle=zc(z);ctx.fillRect(lx,4,8,8);
-    ctx.font='8px JetBrains Mono,monospace';ctx.fillStyle='#9dc4e0';ctx.textAlign='left';
-    const label=z;ctx.fillText(label,lx+11,12);lx+=ctx.measureText(label).width+22;
-  });
-  // Events
-  const hov=hits;
-  if(cv._mv){cv.removeEventListener('mousemove',cv._mv);cv.removeEventListener('click',cv._cl);cv.removeEventListener('mouseleave',cv._ml);}
-  cv._mv=e=>{const rc=cv.getBoundingClientRect(),mx=e.clientX-rc.left,my=e.clientY-rc.top;const h=hov.find(r=>mx>=r.x&&mx<=r.x+r.w&&my>=r.y&&my<=r.y+r.h);if(h){cv.style.cursor='pointer';tt.style.display='block';tt.innerHTML=`<strong>${h.l}</strong><br>${h.z} · ${ZN[h.z]||h.z}<br>${fmt(h.cnt)} buildings`;tt.style.left=Math.max(0,h.x+h.w/2-(tt.offsetWidth||100)/2)+'px';tt.style.top=Math.max(0,h.y-(tt.offsetHeight||58)-8)+'px';}else{cv.style.cursor='default';tt.style.display='none';}};
-  cv._cl=e=>{const rc=cv.getBoundingClientRect(),mx=e.clientX-rc.left,my=e.clientY-rc.top;const h=hov.find(r=>mx>=r.x&&mx<=r.x+r.w&&my>=r.y&&my<=r.y+r.h);if(h){const fk=lvl==='district'?'district':lvl==='province'?'province':lvl==='sector'?'sector':lvl==='cell'?'cell':'village';doFilter(fk,h.l);}};
-  cv._ml=()=>{tt.style.display='none';cv.style.cursor='default';};
-  cv.addEventListener('mousemove',cv._mv);cv.addEventListener('click',cv._cl);cv.addEventListener('mouseleave',cv._ml);
+  renderAllView();
 }
 
+function getAll(city,lt){
+  const d=D[city.id];
+  if(allYr==='both') return d.byLegal[lt]||0;
+  return d.byLegalYear[allYr]?.[lt]||0;
+}
 
-function setLvl3(t){s3lvl=t;document.querySelectorAll('#lvl3 .lvl-btn').forEach(b=>b.classList.toggle('on',b.textContent.toLowerCase().trim()===t.toLowerCase()));renderS3();}
-function toggleExp3(){s3exp=!s3exp;$('expBtn3').innerHTML=s3exp?'<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 01-2 2H3M21 8h-3a2 2 0 01-2-2V3M3 16h3a2 2 0 012 2v3M16 21v-3a2 2 0 012-2h3"/></svg>COLLAPSE':'<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>SHOW ALL';renderS3();}
-function renderS3(){
-  const ad=getAdminData(s3lvl);
-  const items=Object.entries(ad).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-  const cap={province:30,district:30,sector:50,cell:50,village:50}[s3lvl]||30;
-  const shown=s3exp?items:items.slice(0,cap);
-  const max=shown[0]?.[1]||1,tot=items.reduce((s,[,v])=>s+v,0);
-  $('s3meta').textContent=`${items.length} ${s3lvl}s · ${fmt(tot)} total${items.length>cap&&!s3exp?' · top '+cap+' shown':''}`;
-  const cols={province:'var(--teal)',district:'var(--sky)',sector:'var(--violet)',cell:'var(--lime)',village:'var(--gold)'};
-  const col=cols[s3lvl]||'var(--teal)';
-  $('s3bars').innerHTML=shown.map(([l,c])=>{
-    const w=(c/max*100).toFixed(1),act=filters[s3lvl]===l||filters['district']===l;
-    return `<div class="brow ${act?'on':''}" onclick="s3click('${s3lvl}','${esc(l)}')" >
-      <span class="blbl" title="${l}">${l.slice(0,14)}</span>
-      <div class="btrack"><div class="bfill" style="width:${w}%;background:${col};">
-        <span style="color:#0b1a2b;font-weight:700;">${fmt(c)}</span>
-      </div></div>
+function renderAllView(){
+  renderOvCards();
+  renderCmpBars();
+  renderRiskBars();
+}
+
+function renderOvCards(){
+  const c=$('ovGrid'); if(!c) return;
+  c.innerHTML=CITIES.map(city=>{
+    const d=D[city.id];
+    const permit=getAll(city,LK_PERMIT);
+    const ill   =getAll(city,LK_ILLEGAL);
+    const tot   =permit+ill||1;
+    const rate  =pctN(permit,permit+ill);
+    const rateCol=rate>60?'var(--lime)':rate>30?'var(--gold)':'var(--rose)';
+    const secCnt=Object.keys(d.bySector).length;
+    return `<div class="ov-card" onclick="showTab('${city.id}')">
+      <div class="ov-top">
+        <div class="ov-city-row">
+          <div class="ov-cicon" style="background:${city.color}18;border:1px solid ${city.color}44;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${city.color}" stroke-width="1.5">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </div>
+          <div>
+            <div class="ov-cname">${city.label}</div>
+            <div class="ov-cprov">${city.area}</div>
+          </div>
+        </div>
+        <div class="ov-sectors-pill" style="background:${city.color}12;border:1px solid ${city.color}30;color:${city.color};">
+          <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>
+          ${secCnt} urbanized sectors
+        </div>
+        <div class="ov-total-row">
+          <div class="ov-total" style="color:${city.color};">${fmtK(tot)}</div>
+          <div class="ov-total-lbl">buildings</div>
+        </div>
+      </div>
+      <div class="ov-body">
+        ${[[LK_PERMIT,'#00d4b8',permit],[LK_ILLEGAL,'#f06080',ill]].map(([lbl,col,cnt])=>`
+          <div class="ov-bar-wrap">
+            <div class="ov-bar-hd">
+              <span class="ov-bar-name">${lbl}</span>
+              <span class="ov-bar-val" style="color:${col};">${fmtK(cnt)}</span>
+            </div>
+            <div class="ov-bar-track">
+              <div class="ov-bar-fill" style="width:${pctN(cnt,tot)}%;background:${col};"></div>
+            </div>
+          </div>`).join('')}
+        <div class="ov-foot">
+          <div>
+            <div class="ov-comp-lbl">Compliance Rate</div>
+            <div class="ov-comp-val" style="color:${rateCol};">${rate.toFixed(1)}%</div>
+          </div>
+          <div class="ov-arrow">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            View analysis
+          </div>
+        </div>
+      </div>
     </div>`;
   }).join('');
 }
-function s3click(lvl,val){
-  const fk=lvl==='province'?'province':lvl==='district'?'district':lvl==='sector'?'sector':lvl==='cell'?'cell':'village';
-  doFilter(fk,val);
-  if(lvl==='province'||lvl==='district') zoomMap(val);
+
+function renderCmpBars(){
+  const c=$('cmpBars'); if(!c) return;
+  const items=CITIES.map(city=>{
+    const p=getAll(city,LK_PERMIT);
+    const i=getAll(city,LK_ILLEGAL);
+    return{city,p,i,tot:p+i||1};
+  }).sort((a,b)=>b.tot-a.tot);
+  const maxT=items[0]?.tot||1;
+  $('cmpMeta').textContent=allYr==='both'?'2023 & 2025':allYr;
+  c.innerHTML=items.map(({city,p,i,tot},idx)=>`
+    <div class="cmp-row" onclick="showTab('${city.id}')">
+      <span class="cmp-rank">${idx+1}</span>
+      <span class="cmp-name" style="color:${city.color};">${city.label}</span>
+      <div class="cmp-stacked">
+        <div class="cmp-seg" style="width:${pctN(p,maxT)}%;background:#00d4b8cc;" title="Legal: ${fmtK(p)}"></div>
+        <div class="cmp-seg" style="width:${pctN(i,maxT)}%;background:#f06080cc;" title="Illegal: ${fmtK(i)}"></div>
+      </div>
+      <span class="cmp-tot">${fmtK(tot)}</span>
+    </div>`).join('');
 }
 
-// ═══════════════════════════════════════════════════════════
-//  SECTION 4 — LU chart + zone bars
-// ═══════════════════════════════════════════════════════════
-function setLUMode(m){luMode=m;$('lu_abs').classList.toggle('on',m==='abs');$('lu_delta').classList.toggle('on',m==='delta');renderLU();}
-function renderLU(){
-  const cv=$('cvLU');if(!cv)return;
-  const dpr=window.devicePixelRatio||1;
-  const W = cv.parentElement.offsetWidth || cv.closest('.card-body')?.offsetWidth || cv.closest('.card')?.offsetWidth - 36 || 380;
-  const gl25=D.genlu25||SEED.genlu25,gl23=D.genlu23||SEED.genlu23;
-  const cats=Object.keys(gl25).filter(k=>k!=='Unclassified').sort((a,b)=>(gl25[b]||0)-(gl25[a]||0));
-  const BH=22,GAP=4,MR=72;
-  // Measure longest label dynamically
-  cv.width=1;cv.height=1;
-  const ctx=cv.getContext('2d');ctx.font='9px JetBrains Mono,monospace';
-  const ML=Math.ceil(Math.max(...cats.map(c=>ctx.measureText(c).width)))+10;
-  const H=cats.length*(BH+GAP)+22;
-  cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
-  ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
-  const tot25=Object.values(gl25).reduce((s,v)=>s+v,0),tot23=Object.values(gl23).reduce((s,v)=>s+v,0);
-  $('s4meta').textContent=`2025: ${fmtK(tot25)} · 2023: ${fmtK(tot23)}`;
-  if(luMode==='abs'){
-    const maxV=Math.max(...cats.map(c=>Math.max(gl25[c]||0,gl23[c]||0)));
-    // Draw legend at top
-    ctx.font='7px JetBrains Mono,monospace';ctx.textAlign='left';
-    ctx.fillStyle='rgba(160,200,220,.4)';ctx.fillRect(ML,2,22,6);
-    ctx.fillStyle='#9dc4e0';ctx.fillText('2023',ML+25,9);
-    ctx.fillStyle='rgba(160,200,220,.85)';ctx.fillRect(ML+60,2,22,6);
-    ctx.fillStyle='#9dc4e0';ctx.fillText('2025',ML+85,9);
-    cats.forEach((cat,i)=>{
-      const y=18+i*(BH+GAP),v25=gl25[cat]||0,v23=gl23[cat]||0,col=gc(cat);
-      // Category label
-      ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='#9dc4e0';ctx.textAlign='right';
-      ctx.fillText(cat,ML-4,y+BH/2+3);
-      // 2023 bar (top half, muted)
-      const w23=(v23/maxV)*(W-ML-MR);
-      ctx.fillStyle=col+'40';
-      ctx.beginPath();try{ctx.roundRect(ML,y,w23,BH/2-1,[2,2,0,0]);}catch{ctx.rect(ML,y,w23,BH/2-1);}ctx.fill();
-      // 2025 bar (bottom half, vivid)
-      const w25=(v25/maxV)*(W-ML-MR);
-      ctx.fillStyle=col+'cc';
-      ctx.beginPath();try{ctx.roundRect(ML,y+BH/2,w25,BH/2-1,[0,0,2,2]);}catch{ctx.rect(ML,y+BH/2,w25,BH/2-1);}ctx.fill();
-      // Value label — 2025 bold, 2023 dimmer
-      ctx.font='500 9px JetBrains Mono,monospace';ctx.fillStyle='#e0f0ff';
-      // If bar is too wide, put value inside bar instead of outside
-      const v25lbl=fmtK(v25),v25lw=ctx.measureText(v25lbl).width;
-      if(ML+w25+5+v25lw>W-4){ctx.fillStyle='#0b1a2b';ctx.textAlign='right';ctx.fillText(v25lbl,ML+w25-4,y+BH-2);}
-      else{ctx.textAlign='left';ctx.fillText(v25lbl,ML+w25+5,y+BH-2);}
-      ctx.font='7px JetBrains Mono,monospace';ctx.fillStyle='#5a8aaa';ctx.textAlign='left';
-      ctx.fillText(fmtK(v23),ML+w23+5,y+BH/2-2);
-    });
-  }else{
-    const deltas=cats.map(c=>({cat:c,d:(gl25[c]||0)-(gl23[c]||0)}));
-    const maxD=Math.max(...deltas.map(x=>Math.abs(x.d)))||1,mid=ML+(W-ML-MR)/2;
-    ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;ctx.setLineDash([2,3]);
-    ctx.beginPath();ctx.moveTo(mid,0);ctx.lineTo(mid,H);ctx.stroke();ctx.setLineDash([]);
-    deltas.forEach(({cat,d},i)=>{
-      const y=14+i*(BH+GAP),bw=(Math.abs(d)/maxD)*((W-ML-MR)/2),col=d>0?'#78d890':'#f06080';
-      ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='#9dc4e0';ctx.textAlign='right';ctx.fillText(cat,ML-4,y+BH/2+3);
-      ctx.fillStyle=col+'aa';
-      if(d>0){ctx.beginPath();try{ctx.roundRect(mid,y+3,bw,BH-6,[0,2,2,0]);}catch{ctx.rect(mid,y+3,bw,BH-6);}ctx.fill();
-        ctx.font='500 9px JetBrains Mono,monospace';ctx.fillStyle=col;
-        const dlbl='+'+fmtK(d),dlw=ctx.measureText(dlbl).width;
-        if(mid+bw+4+dlw>W-4){ctx.fillStyle='#0b1a2b';ctx.textAlign='right';ctx.fillText(dlbl,mid+bw-4,y+BH/2+3);}
-        else{ctx.textAlign='left';ctx.fillText(dlbl,mid+bw+4,y+BH/2+3);}}
-      else{ctx.beginPath();try{ctx.roundRect(mid-bw,y+3,bw,BH-6,[2,0,0,2]);}catch{ctx.rect(mid-bw,y+3,bw,BH-6);}ctx.fill();ctx.font='500 9px JetBrains Mono,monospace';ctx.fillStyle=col;ctx.textAlign='right';ctx.fillText(fmtK(d),mid-bw-4,y+BH/2+3);}
-    });
-  }
-}
-
-function renderZoneBars(){
-  const data=Object.entries(D.zones25||SEED.zones25).map(([z,c])=>({z,c})).sort((a,b)=>b.c-a.c);
-  const max=data[0]?.c||1;
-  $('zoneBars').innerHTML=data.map(({z,c})=>{
-    const w=(c/max*100).toFixed(1),col=zc(z),tc=ztc(z),act=filters.zone===z;
-    return `<div class="brow ${act?'on':''}" onclick="zClick('${z}')" style="padding:3px 6px 3px 8px;">
-      <span class="blbl" title="${z}">${z}</span>
-      <div class="btrack"><div class="bfill" style="width:${w}%;background:${col};">
-        <span style="color:${tc}">${fmtK(c)}</span>
-      </div></div>
+function renderRiskBars(){
+  const c=$('riskBars'); if(!c) return;
+  const items=CITIES.map(city=>{
+    const p=getAll(city,LK_PERMIT);
+    const i=getAll(city,LK_ILLEGAL);
+    return{city,i,p,r:pctN(i,p+i)};
+  }).sort((a,b)=>b.r-a.r);
+  const maxR=items[0]?.r||1;
+  c.innerHTML=items.map(({city,r},idx)=>{
+    const col=r>50?'var(--rose)':r>25?'var(--gold)':'var(--lime)';
+    return `<div class="risk-row" onclick="showTab('${city.id}')">
+      <span class="risk-rk">${idx+1}</span>
+      <span class="risk-name" style="color:${city.color};">${city.label}</span>
+      <div class="risk-track">
+        <div class="risk-fill" style="width:${(r/maxR*100).toFixed(1)}%;background:${col}cc;"></div>
+      </div>
+      <span class="risk-pct" style="color:${col};">${r.toFixed(1)}%</span>
     </div>`;
   }).join('');
 }
-function zClick(z){filters.zone=filters.zone===z?'':z;const e=$('fZone');if(e){e.value=filters.zone;e.classList.toggle('on',!!filters.zone);}renderTags();renderAll();loadLive();}
 
-// ═══════════════════════════════════════════════════════════
-//  SECTION 5 — Change rate bars
-// ═══════════════════════════════════════════════════════════
-
-// ═══════════════════════════════════════════════════════════
-//  TABLE
-// ═══════════════════════════════════════════════════════════
-function buildTbl(){
-  const grp=($('tblGrp')||{}).value||'district';
-  const yr=($('tblYr')||{}).value||'2025';
-  const gData={province:D.provinces,district:D.districts,sector:D.sectors,cell:D.cells,village:D.villages}[grp]||D.districts;
-  const zData=yr==='2025'?(D.zones25||SEED.zones25):(D.zones23||SEED.zones23);
-  const tot=D.total||SEED.total;
-  tblRows=[];
-  Object.entries(gData).forEach(([area,aT])=>{
-    Object.entries(zData).forEach(([zone,zT])=>{
-      const cnt=Math.round(aT*(zT/Math.max(SEED.total,1)));
-      if(cnt>0)tblRows.push({area,zone,zn:ZN[zone]||zone,lu:Object.entries(GLC).find(([k])=>ZN[zone]?.includes(k))?.[0]||'—',cnt,yr});
-    });
+function updateGlobalKpis(){
+  let tot=0,permit=0,ill=0;
+  CITIES.forEach(c=>{
+    tot   +=D[c.id].total||0;
+    permit+=(D[c.id].byLegal[LK_PERMIT]||0);
+    ill   +=(D[c.id].byLegal[LK_ILLEGAL]||0);
   });
-  tblRows.sort((a,b)=>b.cnt-a.cnt);
-  $('s7meta').textContent=fmt(tblRows.length)+' RECORDS';
-  filterTbl();
-}
-function filterTbl(){
-  const q=($('tblQ').value||'').toLowerCase();
-  filtTbl=tblRows.filter(r=>!q||r.area.toLowerCase().includes(q)||r.zone.toLowerCase().includes(q)||r.zn.toLowerCase().includes(q));
-  $('tblMeta').textContent=fmt(filtTbl.length)+' RECORDS';
-  renderTbl();
-}
-function sortTbl(c){if(sCol===c)sDir*=-1;else{sCol=c;sDir=-1;}renderTbl();}
-function renderTbl(){
-  const rows=[...filtTbl].sort((a,b)=>{const k=['','area','zone','zn','lu','cnt'][sCol]||'cnt';const va=a[k],vb=b[k];return sDir*(typeof va==='number'?va-vb:String(va).localeCompare(String(vb)));}).slice(0,200);
-  const tot=D.total||SEED.total;
-  $('tbody').innerHTML=rows.map((r,i)=>{
-    const p=tot>0?(r.cnt/tot*100).toFixed(2):0,col=zc(r.zone),tc2=ztc(r.zone);
-    return `<tr onclick="tblClick('${esc(r.area)}','${r.zone}')">
-      <td><span class="rnk ${i<3?'top':''}">${i+1}</span></td>
-      <td style="color:var(--ink);font-weight:600">${r.area}</td>
-      <td><span class="zchip" style="background:${col};color:${tc2}">${r.zone}</span></td>
-      <td style="color:var(--ink2)">${r.zn}</td>
-      <td style="color:var(--ink2)">${r.lu}</td>
-      <td style="color:var(--teal);font-weight:700">${fmt(r.cnt)}</td>
-      <td><div class="mbar-w"><div class="mbar"><div class="mfill" style="width:${Math.min(parseFloat(p)*6,100)}%;background:${col}"></div></div><span class="pct-t">${p}%</span></div></td>
-    </tr>`;
-  }).join('');
-}
-function tblClick(area,zone){doFilter('district',area);doFilter('zone',zone);}
-function dlCSV(){
-  const csv=[['AREA','ZONE','ZONE NAME','GEN LU','COUNT','YEAR'],...filtTbl.slice(0,5000).map(r=>[r.area,r.zone,r.zn,r.lu,r.cnt,r.yr])].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`Rwanda_Buildings_${new Date().toISOString().slice(0,10)}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);
+  const rate=pctN(permit,permit+ill);
+  $('g_total').textContent =fmtK(tot);
+  $('g_legal').textContent =fmtK(permit);
+  $('g_illegal').textContent=fmtK(ill);
+  $('g_rate').textContent  =rate.toFixed(1)+'%';
+  $('g_rate_sub').textContent=`${fmt(permit)} of ${fmt(permit+ill)}`;
 }
 
-// ═══════════════════════════════════════════════════════════
-//  FILTER HANDLERS
-// ═══════════════════════════════════════════════════════════
-function doFilter(key,val){
-  filters[key]=val;
-  const m={province:'fProv',district:'fDist',sector:'fSec',cell:'fCell',village:'fVill',zone:'fZone',year:'fYear'};
-  const el=$(m[key]);if(el){el.value=val;el.classList.toggle('on',!!val);}
-  // Cascade: province → clear district; district → clear sector
-  if(key==='province'){filters.district='';filters.sector='';filters.cell='';filters.village='';const fd=$('fDist');if(fd){fd.value='';fd.classList.remove('on');}}
-  if(key==='district'){filters.sector='';filters.cell='';filters.village='';['fSec','fCell','fVill'].forEach(id=>{const e=$(id);if(e){e.value='';e.classList.remove('on');}});}
-  // Zoom map to selected area
-  if(key==='province' && val) zoomMap(val);
-  else if(key==='district' && val) zoomMap(val);
-  else if(!val && key==='province') zoomMap('__rwanda__');
-  else if(!val && key==='district' && !filters.province) zoomMap('__rwanda__');
-  renderTags();renderAll();loadLive();
-}
-function clearFilters(){
-  filters={province:'',district:'',sector:'',cell:'',village:'',zone:'',year:''};
-  ['fProv','fDist','fSec','fCell','fVill','fZone','fYear'].forEach(id=>{const e=$(id);if(e){e.value='';e.classList.remove('on');}});
-  zoomMap('__rwanda__');
-  renderTags();D=Object.assign(D,JSON.parse(JSON.stringify(SEED)));D.provinces=buildProvs(D.districts);
-  renderAll();loadLive();
-}
-function doRefresh(){const b=$('rfBtn');b.classList.add('spin');loadLive().then(()=>b.classList.remove('spin')).catch(()=>b.classList.remove('spin'));}
-function renderTags(){
-  const lbl={province:'PROV',district:'DIST',sector:'SECT',cell:'CELL',village:'VILL',zone:'ZONE',year:'YEAR'};
-  const tags=Object.entries(filters).filter(([,v])=>v);
-  $('atags').style.display=tags.length?'flex':'none';
-  $('atags').innerHTML=tags.map(([k,v])=>`<span class="tag">${lbl[k]||k}: ${v}<button onclick="doFilter('${k}','')">×</button></span>`).join('');
+function setStatus(txt){
+  const b=$('sbar');
+  if(txt){b.classList.remove('gone');$('stxt').textContent=txt.toUpperCase();}
+  else b.classList.add('gone');
 }
 
-// ═══════════════════════════════════════════════════════════
-//  DROPDOWNS
-// ═══════════════════════════════════════════════════════════
-function fillSel(id,vals){
-  const s=$(id);if(!s)return;const cur=s.value;
-  s.innerHTML='<option value="">ALL</option>'+vals.map(v=>`<option value="${v}">${v}</option>`).join('');
-  if(cur)s.value=cur;
-}
-function fillAllDrops(){
-  fillSel('fDist',Object.keys(D.districts).sort());
-  fillSel('fProv',Object.keys(D.provinces).sort());
-  fillSel('fZone',[...new Set([...Object.keys(D.zones25||SEED.zones25),...Object.keys(D.zones23||SEED.zones23)])].sort());
-  if(Object.keys(D.sectors).length) fillSel('fSec',Object.keys(D.sectors).sort());
-  if(Object.keys(D.cells).length) fillSel('fCell',Object.keys(D.cells).sort());
-  if(Object.keys(D.villages).length) fillSel('fVill',Object.keys(D.villages).sort());
-  ['fProv','fDist','fSec','fCell','fVill','fZone','fYear'].forEach(id=>{
-    const e=$(id);if(!e)return;
-    const k={fProv:'province',fDist:'district',fSec:'sector',fCell:'cell',fVill:'village',fZone:'zone',fYear:'year'}[id];
-    if(k&&filters[k]){e.value=filters[k];e.classList.toggle('on',!!filters[k]);}
-  });
-}
+// ══════════════════════════════════════════════════════════════
+//  ARCGIS
+// ══════════════════════════════════════════════════════════════
+let arcReady=false; const mapInst={};
 
-// ═══════════════════════════════════════════════════════════
-//  RENDER ALL
-// ═══════════════════════════════════════════════════════════
-function renderAll(){
-  updateMasthead();renderS1();renderStackSection();renderS3();
-  renderLU();renderZoneBars();buildTbl();
-}
-
-// ═══════════════════════════════════════════════════════════
-//  MAP
-// ═══════════════════════════════════════════════════════════
-let mapLoaded=false;
-// ── Map view reference (global so zoomMap can use it)
-let mapView = null;
-
-// Approximate extents [xmin,ymin,xmax,ymax,wkid] for Rwanda admin units
-const EXTENTS = {
-  // Provinces
-  'Kigali City':       [30.02,-1.61,30.28,-1.87],
-  'Eastern Province':  [29.87,-0.49,31.57,-2.84],
-  'Western Province':  [28.86,-1.05,29.87,-3.07],
-  'Northern Province': [29.40,-1.10,30.35,-1.86],
-  'Southern Province': [29.00,-1.86,30.27,-2.84],
-  // Districts
-  'Kigali':   [30.04,-1.87,30.17,-1.99], 'Kicukiro': [30.08,-1.95,30.20,-2.07], 'Gasabo':   [30.07,-1.83,30.28,-1.95],
-  'Bugesera': [30.09,-1.97,30.53,-2.42], 'Nyagatare':[30.13,-0.81,30.88,-1.64], 'Rwamagana':[30.41,-1.63,30.74,-2.07],
-  'Kirehe':   [30.53,-1.82,31.57,-2.68], 'Gatsibo':  [30.38,-1.15,30.91,-1.70], 'Kayonza':  [30.51,-1.54,30.91,-1.99],
-  'Ngoma':    [30.49,-1.93,30.91,-2.45], 'Rubavu':   [29.19,-1.49,29.50,-1.79], 'Rusizi':   [28.86,-2.42,29.42,-2.90],
-  'Nyamasheke':[29.08,-2.11,29.55,-2.63],'Karongi':  [29.24,-1.85,29.70,-2.35], 'Rutsiro':  [29.17,-1.51,29.75,-1.97],
-  'Nyabihu':  [29.37,-1.35,29.77,-1.76], 'Musanze':  [29.46,-1.37,29.82,-1.65], 'Gicumbi':  [29.88,-1.15,30.41,-1.72],
-  'Rulindo':  [29.91,-1.49,30.27,-1.80], 'Burera':   [29.59,-1.10,30.10,-1.55], 'Gakenke':  [29.63,-1.38,30.07,-1.83],
-  'Nyanza':   [29.55,-2.00,29.99,-2.36], 'Ruhango':  [29.65,-2.07,30.05,-2.45], 'Muhanga':  [29.61,-1.82,29.99,-2.14],
-  'Kamonyi':  [29.79,-1.82,30.11,-2.13], 'Nyaruguru':[29.22,-2.35,29.79,-2.84], 'Gisagara': [29.43,-2.29,29.90,-2.63],
-  'Nyamagabe':[29.14,-2.18,29.65,-2.73], 'Huye':     [29.55,-2.33,29.98,-2.66], 'Ngororero':[29.26,-1.51,29.76,-1.97],
-};
-// Rwanda full extent
-const RWANDA_EXTENT = [28.86,-0.49,31.57,-2.90];
-
-function zoomMap(key){
-  if(!mapView) return;
-  const [xmin,ymax,xmax,ymin] = (key==='__rwanda__' || !key) ? RWANDA_EXTENT : (EXTENTS[key] || RWANDA_EXTENT);
-  mapView.goTo({
-    target: { type:'extent', xmin, ymin, xmax, ymax, spatialReference:{wkid:4326} }
-  }, { duration:800, easing:'ease-in-out' }).catch(()=>{});
-}
-
-function initMap(){
-  if(mapLoaded)return;mapLoaded=true;
+function loadArcGIS(cb){
+  if(arcReady){cb();return;}
   const lnk=document.createElement('link');lnk.rel='stylesheet';
   lnk.href='https://js.arcgis.com/4.29/esri/themes/dark/main.css';
   document.head.appendChild(lnk);
   const s=document.createElement('script');s.src='https://js.arcgis.com/4.29/';
-  s.onload=function(){
-    setTimeout(function(){
-      if(typeof require==='undefined')return;
-      require([
-        'esri/config','esri/WebMap','esri/views/MapView',
-        'esri/layers/FeatureLayer',
-        'esri/widgets/Swipe','esri/widgets/Home','esri/widgets/Search',
-        'esri/widgets/Expand','esri/widgets/Legend','esri/widgets/ScaleBar'
-      ],function(esriConfig,WebMap,MapView,FeatureLayer,Swipe,Home,Search,Expand,Legend,ScaleBar){
-        esriConfig.portalUrl='https://www.arcgis.com';
-
-        // ── Load the user's WebMap as the base
-        const wm=new WebMap({portalItem:{id:WEBMAP_ID}});
-        const view=new MapView({
-          container:'mapDiv',map:wm,
-          center:[29.87,-1.94],zoom:9,
-          ui:{components:['zoom','attribution']},
-          popup:{dockEnabled:true,dockOptions:{position:'bottom-right',breakpoint:false}}
-        });
-        mapView=view;
-
-        // ── Zone colour renderer (shared)
-        const zoneColors={A1:'#66bb22',A2:'#88cc33',R1A:'#ffe033',R1B:'#ffd580',R2:'#ffaa22',R3:'#ff7700',R4:'#ff4422',R1:'#ffcc44',RS:'#ffbbaa',C1:'#ff3377',C3:'#cc0044',C4:'#ff0066',T1:'#4477bb',T2:'#335588',I1:'#bb5500',I2:'#883300',F1:'#226611',F2:'#1d4a1b',PF1:'#1144bb',PF2:'#2255cc',W1B:'#0066aa',W2:'#0088cc',OS:'#225533',PA:'#009944',ET:'#00cc88',B1:'#334444'};
-        const makeRenderer=field=>({
-          type:'unique-value',field,
-          defaultSymbol:{type:'simple-fill',color:[42,69,96,160],outline:{color:[255,255,255,30],width:.2}},
-          uniqueValueInfos:Object.entries(zoneColors).map(([v,c])=>({
-            value:v,symbol:{type:'simple-fill',color:c+'bb',outline:{color:c,width:.5}}
-          }))
-        });
-
-        // ── Two overlay layers for the swipe — 2023 left, 2025 right
-        const layer2023=new FeatureLayer({
-          url:SVC,renderer:makeRenderer('zone_code_2023'),opacity:.9,
-          popupTemplate:{title:'2023 Zone: {zone_code_2023}',content:'District: {district}<br>Gen LU: {gen_lu_2023}'}
-        });
-        const layer2025=new FeatureLayer({
-          url:SVC,renderer:makeRenderer('zone_code_2025'),opacity:.9,
-          popupTemplate:{title:'2025 Zone: {zone_code_2025}',content:'District: {district}<br>Gen LU: {gen_lu_2025}<br>Changed: {change_io}'}
-        });
-
-        // ── Building points — only when zoomed in past 1:50 000
-        const buildingPts=new FeatureLayer({
-          url:SVC,minScale:50000,maxScale:0,opacity:.8,
-          renderer:{type:'simple',symbol:{type:'simple-marker',color:'#00d4b8',size:5,outline:{color:'#0b1a2b',width:.8}}},
-          popupTemplate:{title:'Building',content:'District: {district}<br>Zone 2025: {zone_code_2025}<br>Zone 2023: {zone_code_2023}'}
-        });
-
-        wm.when(()=>{
-          // Add our layers on top of the WebMap
-          wm.addMany([layer2023,layer2025,buildingPts]);
-
-          // Swipe — 2023 on left, 2025 on right
-          const swipe=new Swipe({view,leadingLayers:[layer2023],trailingLayers:[layer2025],position:50,direction:'horizontal'});
-          view.ui.add(swipe);
-
-          view.ui.add(new Home({view}),'top-left');
-          view.ui.add(new Search({view}),'top-right');
-          view.ui.add(new ScaleBar({view,unit:'metric'}),'bottom-right');
-          view.ui.add(new Expand({
-            view,content:new Legend({view,layerInfos:[
-              {layer:layer2025,title:'Zones 2025'},
-              {layer:layer2023,title:'Zones 2023'}
-            ]}),expandIcon:'legend',expanded:false
-          }),'bottom-left');
-
-          const ph=document.getElementById('mapPh');if(ph)ph.style.display='none';
-          const lb=document.getElementById('mapLegendBar');if(lb)lb.style.display='flex';
-          $('maphint').textContent='Drag swipe handle to compare 2023 ↔ 2025 · Click zone to filter';
-
-          // Zoom hint for building points
-          view.watch('scale',scale=>{
-            const hint=document.getElementById('mapZoomHint');
-            if(hint)hint.classList.toggle('active',scale<50000);
-          });
-
-          // Click → filter dashboard + zoom map
-          view.on('click',async evt=>{
-            try{
-              const res=await view.hitTest(evt,{include:[layer2025,layer2023]});
-              const hit=res.results[0];
-              if(!hit||!hit.graphic)return;
-              const a=hit.graphic.attributes;
-              if(a[F.district]){doFilter('district',a[F.district]);zoomMap(a[F.district]);}
-            }catch(e){}
-          });
-        },()=>$('maphint').textContent='Map unavailable — check network / portal access');
-      });
-    },150);
-  };
+  s.onload=()=>setTimeout(()=>{arcReady=true;cb();},200);
   document.head.appendChild(s);
 }
-// ═══════════════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════════════
-D.provinces=buildProvs(D.districts);
-fillAllDrops();
-// Wait for DOM paint so offsetWidth is available for canvas sizing
-requestAnimationFrame(()=>{
-  requestAnimationFrame(()=>{
-    renderTags();renderAll();
-    setTimeout(()=>loadLive(),200);
-  });
-});
 
-// Re-render charts on window resize
-let resizeTimer;
-window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{renderStackSection();renderLU();},250);});
-</script>
-<div class="fs-overlay" id="fsOverlay">
-  <div class="fs-bar">
-    <div class="fs-title" id="fsTitle"></div>
-    <button class="fs-close" onclick="closeFullscreen()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>CLOSE · ESC</button>
-  </div>
-  <div class="fs-body" id="fsBody"></div>
-</div>
-<script>
-function openFullscreen(contentId, title){
-  const overlay = document.getElementById('fsOverlay');
-  const ftitle = document.getElementById('fsTitle');
-  const fbody = document.getElementById('fsBody');
-  ftitle.textContent = title;
-  
-  const el = document.getElementById(contentId);
-  if(!el) return;
-  
-  // Clone the content
-  const clone = el.cloneNode(true);
-  clone.style.cssText = '';
-  
-  if(contentId === 's1ZoneBars'){
-    // Zone bars — show in 3-column grid for fullscreen
-    clone.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px 24px;';
-    // Re-render with full data into clone
-    const zoneData = s1yr==='2025'?(D.zones25||SEED.zones25):(D.zones23||SEED.zones23);
-    const items = Object.entries(zoneData).map(([z,c])=>({z,c})).sort((a,b)=>b.c-a.c);
-    const max = items[0]?.c||1;
-    clone.innerHTML = items.map(({z,c})=>{
-      const w=(c/max*100).toFixed(1),col=zc(z),tc=ztc(z);
-      return '<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;">'+
-        '<span style="width:52px;flex-shrink:0;font-family:var(--mono);font-size:10px;color:var(--ink);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+z+'">'+z+'</span>'+
-        '<div style="flex:1;height:20px;background:var(--bg3);position:relative;">'+
-          '<div style="width:'+w+'%;height:100%;background:'+col+';display:flex;align-items:center;justify-content:flex-end;padding-right:5px;">'+
-            '<span style="font-family:var(--mono);font-size:9px;font-weight:700;color:'+tc+';">'+fmtK(c)+'</span>'+
-          '</div>'+
-        '</div>'+
-      '</div>';
-    }).join('');
-  } else if(contentId === 's1wrap'){
-    // Canvas — just show it larger
-    clone.style.cssText = 'position:relative;overflow-x:auto;width:100%;';
-    // Re-render canvas at larger size after modal opens
-    setTimeout(()=>{
-      const c = fbody.querySelector('canvas');
-      if(c) c.style.height='580px';
-      renderStackedChart('cv1','s1wrap','tt1',s1lvl,s1yr,'district');
-    }, 50);
-  }
-  
-  fbody.innerHTML='';
-  fbody.appendChild(clone);
-  overlay.classList.add('open');
-  document.body.style.overflow='hidden';
+const permitRenderer={
+  type:'unique-value',field:'legal_t',
+  defaultSymbol:{type:'simple-fill',color:[42,69,96,160],outline:{color:[255,255,255,20],width:.2}},
+  uniqueValueInfos:[
+    {value:'Legal',   symbol:{type:'simple-fill',color:'#00d4b8bb',outline:{color:'#00d4b8',width:.6}}},
+    {value:'Illegal', symbol:{type:'simple-fill',color:'#f06080bb',outline:{color:'#f06080',width:.6}}},
+  ]
+};
+
+const popupTpl={
+  title:'{legal_t}',
+  content:'<b>Zone:</b> {zone_code}<br><b>District:</b> {district}<br><b>Sector:</b> {sector}<br><b>Cell:</b> {cell}<br><b>Village:</b> {village}<br><b>Year:</b> {year_t}<br><b>UPI:</b> {upi}'
+};
+
+function initAllMap(){
+  loadArcGIS(()=>{
+    require(['esri/WebMap','esri/views/MapView','esri/layers/FeatureLayer',
+             'esri/widgets/Home','esri/widgets/Legend','esri/widgets/Expand'],
+    function(WebMap,MapView,FeatureLayer,Home,Legend,Expand){
+      const layers=CITIES.map(c=>new FeatureLayer({url:c.svc,renderer:permitRenderer,popupTemplate:popupTpl,title:c.label}));
+      const wm=new WebMap({portalItem:{id:WEBMAP_ID}});
+      layers.forEach(l=>wm.add(l));
+      const view=new MapView({container:'allMapDiv',map:wm,center:[29.87,-1.94],zoom:8,
+        ui:{components:['zoom','attribution']}});
+      view.ui.add(new Home({view}),'top-left');
+      view.ui.add(new Expand({view,content:new Legend({view}),expandIcon:'legend',expanded:false}),'bottom-left');
+      view.when(()=>{$('allMapHint').textContent='Click any building to see permit status · All 7 urban areas';});
+    });
+  });
 }
-function closeFullscreen(){
-  document.getElementById('fsOverlay').classList.remove('open');
-  document.body.style.overflow='';
-  // Re-render original stacked chart back to normal size
-  setTimeout(()=>renderStackSection(),100);
+
+function initCityMap(id){
+  if(mapInst[id]) return; mapInst[id]=true;
+  const city=CITIES.find(c=>c.id===id); if(!city) return;
+  loadArcGIS(()=>{
+    require(['esri/WebMap','esri/views/MapView','esri/layers/FeatureLayer',
+             'esri/widgets/Home','esri/widgets/Search','esri/widgets/Legend',
+             'esri/widgets/Expand','esri/widgets/ScaleBar'],
+    function(WebMap,MapView,FeatureLayer,Home,Search,Legend,Expand,ScaleBar){
+      const layer=new FeatureLayer({url:city.svc,renderer:permitRenderer,popupTemplate:popupTpl,title:`${city.label} Buildings`});
+      const wm=new WebMap({portalItem:{id:WEBMAP_ID}});
+      wm.add(layer);
+      const view=new MapView({container:`mapDiv_${id}`,map:wm,zoom:13,
+        ui:{components:['zoom','attribution']},
+        popup:{dockEnabled:true,dockOptions:{position:'bottom-right',breakpoint:false}}});
+      view.ui.add(new Home({view}),'top-left');
+      view.ui.add(new Search({view}),'top-right');
+      view.ui.add(new ScaleBar({view,unit:'metric'}),'bottom-right');
+      view.ui.add(new Expand({view,content:new Legend({view,layerInfos:[{layer,title:'Permit Status'}]}),
+        expandIcon:'legend',expanded:true}),'bottom-left');
+      view.when(()=>$(`mhint_${id}`).textContent=`${city.label} · click a building for zone, sector, cell, village details`);
+    });
+  });
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFullscreen();});
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
+buildTabs();
+buildCityViews();
+renderAllView();
+Promise.all(CITIES.map(c=>loadCity(c))).then(()=>setStatus(null)).catch(()=>setStatus(null));
+initAllMap();
+window.addEventListener('resize',()=>renderAllView());
 </script>
 </body>
 </html>
