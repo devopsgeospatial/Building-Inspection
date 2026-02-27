@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Rwanda Buildings & Zoning Intelligence</title>
+<title>Rwanda Buildings & Zoning Application</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -177,11 +177,12 @@ body::after{
   border-top:none;
   margin:0 -32px;
   padding:0;
-  flex-wrap:wrap;
+  flex-wrap:nowrap;
+  overflow-x:auto;
   position:sticky;top:0;z-index:100;
 }
 .fbar-lbl{
-  padding:11px 16px 11px 32px;
+  padding:9px 12px 9px 20px;
   font-family:var(--mono);font-size:9px;
   letter-spacing:2px;text-transform:uppercase;
   color:var(--ink2);
@@ -192,7 +193,7 @@ body::after{
 .fbar-lbl svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.5;}
 .fg{display:flex;align-items:stretch;border-right:1px solid var(--bd);}
 .fg label{
-  padding:0 8px 0 14px;
+  padding:0 6px 0 10px;
   font-family:var(--mono);font-size:8px;
   letter-spacing:1.5px;text-transform:uppercase;
   color:var(--ink3);
@@ -200,18 +201,18 @@ body::after{
   white-space:nowrap;
 }
 .fsel{
-  padding:11px 24px 11px 4px;
+  padding:9px 18px 9px 4px;
   background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%235a90b0' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 6px center transparent;
   border:none;
   color:var(--ink);
   font-family:var(--mono);font-size:10px;
   appearance:none;outline:none;cursor:pointer;
-  min-width:100px;
+  min-width:72px;
 }
 .fsel.on{color:var(--teal);}
 .fsel option{background:var(--bg2);}
 .btn-clr{
-  padding:11px 16px;
+  padding:9px 12px;
   background:none;border:none;border-left:1px solid var(--bd);
   color:var(--ink2);font-family:var(--mono);font-size:9px;
   letter-spacing:1.5px;text-transform:uppercase;
@@ -222,8 +223,8 @@ body::after{
 .btn-clr svg{width:8px;height:8px;stroke:currentColor;fill:none;stroke-width:3;}
 .atags{
   display:flex;flex-wrap:wrap;gap:5px;
-  padding:8px 32px;width:100%;
-  border-top:1px solid var(--bd);background:var(--bg);
+  padding:6px 32px;
+  border-top:1px solid var(--bd);background:var(--bg1);
 }
 .tag{
   display:inline-flex;align-items:center;gap:5px;
@@ -331,7 +332,7 @@ body::after{
 .brow:hover{background:rgba(255,255,255,.025);}
 .brow.on{background:var(--teald);outline:1px solid rgba(0,212,184,.15);}
 .blbl{
-  width:88px;flex-shrink:0;
+  width:110px;flex-shrink:0;
   font-family:var(--mono);font-size:9px;
   color:var(--ink);text-align:right;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
@@ -436,6 +437,8 @@ tbody td{padding:7px 14px;font-family:var(--mono);font-size:10px;color:var(--ink
 .mfill{height:100%;}
 .pct-t{font-family:var(--mono);font-size:9px;color:var(--ink2);width:36px;text-align:right;flex-shrink:0;}
 
+#s1ZoneBars > .brow { min-width:0; min-height:26px; display:flex; align-items:center; }
+#s1ZoneBars > .brow .btrack { min-width:0; flex:1; height:18px; }
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--bg4);}
@@ -487,6 +490,34 @@ tbody td{padding:7px 14px;font-family:var(--mono);font-size:10px;color:var(--ink
 .fs-body .btrack{height:22px;}
 .fs-body .bfill span{font-size:10px;}
 .fs-body canvas{width:100%!important;height:600px!important;}
+
+/* ── SWIPE MAP UI */
+.map-legend-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 20px;
+  background:var(--bg2);border-top:1px solid var(--bd2);
+  flex-shrink:0;
+}
+.mleg{display:flex;align-items:center;gap:8px;}
+.mleg-yr{
+  font-family:var(--serif);font-size:15px;color:var(--teal);
+}
+.mleg-lbl{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);}
+.mleg-center{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:9px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--ink2);
+}
+.map-zoom-hint{
+  padding:7px 20px;
+  background:var(--bg1);border-top:1px solid var(--bd);
+  font-family:var(--mono);font-size:9px;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--ink3);
+  display:flex;align-items:center;gap:6px;
+  transition:color .3s;
+}
+.map-zoom-hint.active{color:var(--lime);}
+.mapwrap{display:flex;flex-direction:column;}
 </style>
 </head>
 <body>
@@ -496,7 +527,7 @@ tbody td{padding:7px 14px;font-family:var(--mono);font-size:10px;color:var(--ink
 <header class="masthead">
   <div class="mh-top">
     <div class="mh-brand">
-      <div class="mh-title">Buildings &amp; Zoning<br><em>Intelligence</em> Platform</div>
+      <div class="mh-title">Buildings &amp; Zoning<br><em>Application</em></div>
       <div class="mh-sub">Master Plan Analysis · 2023 → 2025 · All 30 Districts</div>
     </div>
     <div class="mh-controls">
@@ -552,8 +583,8 @@ tbody td{padding:7px 14px;font-family:var(--mono);font-size:10px;color:var(--ink
     </select>
   </div>
   <button class="btn-clr" onclick="clearFilters()"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>CLEAR</button>
-  <div class="atags" id="atags" style="display:none"></div>
 </div>
+<div class="atags" id="atags" style="display:none;margin:0 -32px;"></div>
 
 <!-- ═══════════════════════════════════════════════
      SECTION 1 — Zone Code Distribution
@@ -568,13 +599,14 @@ tbody td{padding:7px 14px;font-family:var(--mono);font-size:10px;color:var(--ink
         <button class="yr-btn on" id="yr1_25" onclick="setYr1('2025')">2025</button>
         <button class="yr-btn" id="yr1_23" onclick="setYr1('2023')">2023</button>
       </div>
+      <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--teal)" id="s1tot">—</div>
       <div class="sec-meta" id="s1meta">—</div>
     </div>
   </div>
   <div class="card">
     
     <div class="card-body" style="padding:12px 18px;">
-      <div id="s1ZoneBars" style="display:grid;grid-template-columns:1fr 1fr;gap:2px 20px;align-items:start;"></div>
+      <div id="s1ZoneBars" class="blist" style="display:grid;grid-template-columns:1fr 1fr;gap:3px 24px;"></div>
     </div>
   </div>
 </div>
@@ -685,12 +717,29 @@ tbody td{padding:7px 14px;font-family:var(--mono);font-size:10px;color:var(--ink
 <div class="section">
   <div class="sec-hd">
     <div>
-            <div class="sec-title">Building Footprints &amp; Zoning Map</div>
+            <div class="sec-title">Zoning Swipe: 2023 vs 2025</div>
     </div>
     <div class="sec-meta" id="maphint">Map loading after data…</div>
   </div>
   <div class="mapwrap">
-    <div id="mapDiv"><div class="map-ph"><svg viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg><p>Map loads after data queries</p></div></div>
+    <div id="mapDiv">
+      <div class="map-ph" id="mapPh">
+        <svg viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>
+        <p>SWIPE MAP LOADS AFTER DATA</p>
+      </div>
+    </div>
+    <div class="map-legend-bar" id="mapLegendBar" style="display:none;">
+      <div class="mleg mleg-left"><span class="mleg-yr">◀ 2023</span><span class="mleg-lbl">Master Plan Zones</span></div>
+      <div class="mleg-center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8l-6-6-6 6M6 16l6 6 6-6"/></svg>
+        DRAG TO COMPARE
+      </div>
+      <div class="mleg mleg-right"><span class="mleg-lbl">Master Plan Zones</span><span class="mleg-yr">2025 ▶</span></div>
+    </div>
+    <div class="map-zoom-hint" id="mapZoomHint">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/></svg>
+      ZOOM IN TO SEE BUILDING POINTS
+    </div>
   </div>
 </div>
 
@@ -762,14 +811,15 @@ const SEED={
   zones25:{'A1':1970659,'R1B':1564258,'R1A':438815,'C1':360471,'T1':317022,'R2':301375,'R3':218106,'R1':80119,'RS':67453,'PF1':58874,'R4':57112,'F1':53409,'C3':41943,'A2':29867,'I1':26109,'OS':18432,'PF2':16782,'W1B':13421,'B1':12345,'T2':10234,'PF3':9876,'ET':8765,'PA':7654,'F2':6543,'I2':5432,'B2':4321,'PF4':3210,'T3':2987,'W2':2345,'U':1987,'C4':1765,'PF5':1543,'T4':1234,'WB':1123,'B4':987,'I3':876,'PF6':654,'F5':543,'W3':427},
   zones23:{'A1':1730000,'R1B':1350000,'R1A':400000,'C1':310000,'T1':280000,'R2':260000,'R3':190000,'R1':70000,'RS':58000,'PF1':45000,'R4':48000,'F1':47000,'C3':36000,'A2':25000,'I1':25000,'OS':14000,'PF2':12000,'W1B':11000,'B1':10000,'T2':8500,'PF3':8000,'ET':7000,'PA':6500,'F2':5500,'I2':4800,'B2':3800,'PF4':2900,'T3':2600,'W2':2100,'U':1800,'C4':1600,'PF5':1400,'T4':1100,'WB':1000,'B4':880,'I3':800,'PF6':600,'F5':490,'W3':400},
   genlu25:{'Residential':2727238,'Agriculture':2000526,'Commercial':402793,'Transportation':350146,'Forest':102910,'Public Facility':101561,'Industrial':34126,'Open Space':34060,'Buffer':33705,'Public Administration':13998,'Wetland':9510,'Utility':3882,'Unclassified':11619,'Water Body':427},
-  genlu23:{'Residential':2608427,'Agriculture':1759336,'Commercial':380522,'Transportation':332398,'Forest':100334,'Public Facility':87173,'Industrial':34905,'Open Space':26945,'Buffer':30218,'Public Administration':21317,'Wetland':8012,'Utility':4088,'Unclassified':432399,'Water Body':427}
+  genlu23:{'Residential':2608427,'Agriculture':1759336,'Commercial':380522,'Transportation':332398,'Forest':100334,'Public Facility':87173,'Industrial':34905,'Open Space':26945,'Buffer':30218,'Public Administration':21317,'Wetland':8012,'Utility':4088,'Unclassified':432399,'Water Body':427},
+  sectors:{'Kacyiru':45234,'Kimironko':42156,'Gisozi':38920,'Remera':36745,'Kicukiro':34567,'Gatenga':32109,'Gahanga':30876,'Kagarama':29543,'Masaka':27890,'Batsinda':26432,'Gitega':24987,'Nyamirambo':23654,'Gitikinyoni':22341,'Kimisagara':21098,'Kabuye':19876,'Rusororo':18654,'Kanombe':17432,'Ndera':16210,'Jabana':15089,'Bugesera':14567},
+  cells:{'Kabeza':8234,'Gahanga':7856,'Kicukiro':7432,'Kimironko':7109,'Kacyiru':6876,'Remera':6543,'Gisozi':6210,'Gatenga':5987,'Masaka':5654,'Kagarama':5321},
+  villages:{'Amahoro':2345,'Inzira':2109,'Ubumwe':1987,'Umurinzi':1876,'Urugwiro':1765,'Agatare':1654,'Akabahizi':1543,'Akagarama':1432,'Akagera':1321,'Akajevejeve':1210}
 };
 
 // Live data
-let D={...JSON.parse(JSON.stringify(SEED)),provinces:{},sectors:{},cells:{},villages:{}};
+let D={...JSON.parse(JSON.stringify(SEED)),provinces:{}};
 function buildProvs(d){const p={};for(const[k,ds]of Object.entries(PMAP)){const t=ds.reduce((s,x)=>s+(d[x]||0),0);if(t>0)p[k]=t;}return p;}
-D.provinces=buildProvs(D.districts);
-
 // State
 let filters={province:'',district:'',sector:'',cell:'',village:'',zone:'',year:''};
 let s1lvl='province',s1yr='2025';
@@ -806,6 +856,7 @@ function buildWhere(){
 //  FETCH — POST
 // ═══════════════════════════════════════════════════════════
 async function qCount(where,groupBy,ms=28000){
+  // Statistical GROUP BY queries — paginate to bypass server record limits
   const body=new URLSearchParams();
   body.set('where',where);
   body.set('groupByFieldsForStatistics',groupBy);
@@ -814,9 +865,14 @@ async function qCount(where,groupBy,ms=28000){
   body.set('f','json');
   const ctrl=new AbortController();
   const tid=setTimeout(()=>ctrl.abort(),ms);
-  try{const r=await fetch(SVC+'/query',{method:'POST',body,signal:ctrl.signal,headers:{'Content-Type':'application/x-www-form-urlencoded'}});const j=await r.json();if(j.error)throw new Error(j.error.message);return j.features||[];}
-  finally{clearTimeout(tid);}
+  try{
+    const r=await fetch(SVC+'/query',{method:'POST',body,signal:ctrl.signal,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    const j=await r.json();
+    if(j.error)throw new Error(j.error.message);
+    return j.features||[];
+  }finally{clearTimeout(tid);}
 }
+
 
 async function qVals(field,where){
   const body=new URLSearchParams();
@@ -943,8 +999,8 @@ function renderS1(){
   const items=Object.entries(zoneData).map(([z,c])=>({z,c})).sort((a,b)=>b.c-a.c);
   const max=items[0]?.c||1;
   const tot=items.reduce((s,x)=>s+x.c,0);
-  $('s1tot').textContent=fmt(tot)+' BUILDINGS';
-  $('s1meta').textContent=`${items.length} zone codes · ${s1yr}`;
+  const s1t=$('s1tot');if(s1t)s1t.textContent=fmt(tot)+' BUILDINGS';
+  const s1m=$('s1meta');if(s1m)s1m.textContent=`${items.length} zone codes · ${s1yr}`;
   $('s1ZoneBars').innerHTML=items.map(({z,c})=>{
     const w=(c/max*100).toFixed(1),col=zc(z),tc=ztc(z),act=filters.zone===z;
     return `<div class="brow ${act?'on':''}" onclick="zClick('${z}')" style="padding:4px 6px 4px 8px;">
@@ -962,7 +1018,7 @@ function getAdminData(lvl){
 }
 function setLvl1(t){
   s1lvl=t;
-  document.querySelectorAll('#lvl1 .lvl-btn').forEach(b=>b.classList.toggle('on',b.textContent.toLowerCase().startsWith(t.slice(0,4).toLowerCase())));
+  document.querySelectorAll('#lvl1 .lvl-btn').forEach(b=>b.classList.toggle('on',b.textContent.toLowerCase().trim()===t.toLowerCase()));
   renderStackSection();
 }
 function renderStackSection(){
@@ -977,13 +1033,14 @@ function renderStackedChart(cvId,wrapId,ttId,lvl,yr,filterKey){
   const dpr=window.devicePixelRatio||1;
   const areaData=getAdminData(lvl);
   const zoneData=yr==='2025'?(D.zones25||SEED.zones25):(D.zones23||SEED.zones23);
-  const areas=Object.entries(areaData).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const allAreas=Object.entries(areaData).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const areas=allAreas.slice(0,40); // cap at 40 for readability
   if(!areas.length){cv.width=0;cv.height=0;return;}
 
-  const topZ=Object.entries(zoneData).sort((a,b)=>b[1]-a[1]).slice(0,9).map(([z])=>z);
+  const topZ=Object.entries(zoneData).sort((a,b)=>b[1]-a[1]).slice(0,14).map(([z])=>z);
   const totZ=topZ.reduce((s,z)=>s+(zoneData[z]||0),0);
   const M={t:24,r:12,b:72,l:52};
-  const avail=wrap.offsetWidth||900;
+  const avail = wrap.offsetWidth || wrap.parentElement?.offsetWidth || wrap.closest('.card-body')?.offsetWidth || window.innerWidth - 120 || 900;
   const BW=Math.max(14,Math.min(50,Math.floor((avail-M.l-M.r)/(areas.length+1))-5));
   const GAP=5,CH=320;
   const CW=Math.max(avail,(BW+GAP)*areas.length+M.l+M.r+GAP*2);
@@ -1038,38 +1095,24 @@ function renderStackedChart(cvId,wrapId,ttId,lvl,yr,filterKey){
   cv.addEventListener('mousemove',cv._mv);cv.addEventListener('click',cv._cl);cv.addEventListener('mouseleave',cv._ml);
 }
 
-function renderS1(){
-  const ad=getAdminData(s1lvl);
-  const tot=Object.values(ad).reduce((s,v)=>s+v,0);
-  $('s1tot').textContent=fmt(tot)+' BUILDINGS';
-  $('s1meta').textContent=`${Object.keys(ad).length} ${s1lvl}s · zone breakdown ${s1yr}`;
-  renderStackedChart('cv1','s1wrap','tt1',s1lvl,s1yr,'district');
-}
 
-// ═══════════════════════════════════════════════════════════
-//  SECTION 2 — Zone change delta chart
-// ═══════════════════════════════════════════════════════════
-
-// ═══════════════════════════════════════════════════════════
-//  SECTION 3 — Total buildings bar
-// ═══════════════════════════════════════════════════════════
-function setLvl3(t){s3lvl=t;document.querySelectorAll('#lvl3 .lvl-btn').forEach(b=>b.classList.toggle('on',b.textContent.toLowerCase()===t));renderS3();}
+function setLvl3(t){s3lvl=t;document.querySelectorAll('#lvl3 .lvl-btn').forEach(b=>b.classList.toggle('on',b.textContent.toLowerCase().trim()===t.toLowerCase()));renderS3();}
 function toggleExp3(){s3exp=!s3exp;$('expBtn3').innerHTML=s3exp?'<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 01-2 2H3M21 8h-3a2 2 0 01-2-2V3M3 16h3a2 2 0 012 2v3M16 21v-3a2 2 0 012-2h3"/></svg>COLLAPSE':'<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>SHOW ALL';renderS3();}
 function renderS3(){
   const ad=getAdminData(s3lvl);
   const items=Object.entries(ad).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-  const shown=s3exp?items:items.slice(0,20);
+  const cap={province:30,district:30,sector:50,cell:50,village:50}[s3lvl]||30;
+  const shown=s3exp?items:items.slice(0,cap);
   const max=shown[0]?.[1]||1,tot=items.reduce((s,[,v])=>s+v,0);
-  $('s3meta').textContent=`${items.length} ${s3lvl}s · ${fmt(tot)} total`;
+  $('s3meta').textContent=`${items.length} ${s3lvl}s · ${fmt(tot)} total${items.length>cap&&!s3exp?' · top '+cap+' shown':''}`;
   const cols={province:'var(--teal)',district:'var(--sky)',sector:'var(--violet)',cell:'var(--lime)',village:'var(--gold)'};
   const col=cols[s3lvl]||'var(--teal)';
   $('s3bars').innerHTML=shown.map(([l,c])=>{
     const w=(c/max*100).toFixed(1),act=filters[s3lvl]===l||filters['district']===l;
-    return `<div class="brow ${act?'on':''}" onclick="s3click('${s3lvl}','${esc(l)}')">
-      <span class="blbl" title="${l}">${l.slice(0,12)}</span>
-      <div class="btrack"><div class="bfill" style="width:${w}%;background:${col}40">
-        <div style="position:absolute;left:0;top:0;bottom:0;width:${w}%;background:${col};opacity:.7;transition:width .5s;"></div>
-        <span style="color:var(--ink);position:relative;z-index:1;">${fmt(c)}</span>
+    return `<div class="brow ${act?'on':''}" onclick="s3click('${s3lvl}','${esc(l)}')" >
+      <span class="blbl" title="${l}">${l.slice(0,14)}</span>
+      <div class="btrack"><div class="bfill" style="width:${w}%;background:${col};">
+        <span style="color:#0b1a2b;font-weight:700;">${fmt(c)}</span>
       </div></div>
     </div>`;
   }).join('');
@@ -1087,26 +1130,48 @@ function setLUMode(m){luMode=m;$('lu_abs').classList.toggle('on',m==='abs');$('l
 function renderLU(){
   const cv=$('cvLU');if(!cv)return;
   const dpr=window.devicePixelRatio||1;
-  const W=cv.parentElement.offsetWidth||380;
+  const W = cv.parentElement.offsetWidth || cv.closest('.card-body')?.offsetWidth || cv.closest('.card')?.offsetWidth - 36 || 380;
   const gl25=D.genlu25||SEED.genlu25,gl23=D.genlu23||SEED.genlu23;
-  const cats=Object.keys(gl25).filter(k=>k!=='Unclassified').sort((a,b)=>(gl25[b]||0)-(gl25[a]||0)).slice(0,11);
-  const BH=22,GAP=4,ML=128,MR=72,H=cats.length*(BH+GAP)+28;
+  const cats=Object.keys(gl25).filter(k=>k!=='Unclassified').sort((a,b)=>(gl25[b]||0)-(gl25[a]||0));
+  const BH=22,GAP=4,MR=72;
+  // Measure longest label dynamically
+  cv.width=1;cv.height=1;
+  const ctx=cv.getContext('2d');ctx.font='9px JetBrains Mono,monospace';
+  const ML=Math.ceil(Math.max(...cats.map(c=>ctx.measureText(c).width)))+10;
+  const H=cats.length*(BH+GAP)+22;
   cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
-  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
   const tot25=Object.values(gl25).reduce((s,v)=>s+v,0),tot23=Object.values(gl23).reduce((s,v)=>s+v,0);
   $('s4meta').textContent=`2025: ${fmtK(tot25)} · 2023: ${fmtK(tot23)}`;
   if(luMode==='abs'){
     const maxV=Math.max(...cats.map(c=>Math.max(gl25[c]||0,gl23[c]||0)));
+    // Draw legend at top
+    ctx.font='7px JetBrains Mono,monospace';ctx.textAlign='left';
+    ctx.fillStyle='rgba(160,200,220,.4)';ctx.fillRect(ML,2,22,6);
+    ctx.fillStyle='#9dc4e0';ctx.fillText('2023',ML+25,9);
+    ctx.fillStyle='rgba(160,200,220,.85)';ctx.fillRect(ML+60,2,22,6);
+    ctx.fillStyle='#9dc4e0';ctx.fillText('2025',ML+85,9);
     cats.forEach((cat,i)=>{
-      const y=14+i*(BH+GAP),v25=gl25[cat]||0,v23=gl23[cat]||0,col=gc(cat);
+      const y=18+i*(BH+GAP),v25=gl25[cat]||0,v23=gl23[cat]||0,col=gc(cat);
+      // Category label
       ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='#9dc4e0';ctx.textAlign='right';
-      ctx.fillText(cat.slice(0,17),ML-8,y+BH/2+3);
+      ctx.fillText(cat,ML-4,y+BH/2+3);
+      // 2023 bar (top half, muted)
       const w23=(v23/maxV)*(W-ML-MR);
-      ctx.fillStyle=col+'30';ctx.beginPath();try{ctx.roundRect(ML,y,w23,BH/2-1,[1,1,0,0]);}catch{ctx.rect(ML,y,w23,BH/2-1);}ctx.fill();
-      ctx.fillStyle='#9dc4e0';ctx.font='7px JetBrains Mono,monospace';ctx.textAlign='left';ctx.fillText('23',ML+2,y+BH/2-3);
+      ctx.fillStyle=col+'40';
+      ctx.beginPath();try{ctx.roundRect(ML,y,w23,BH/2-1,[2,2,0,0]);}catch{ctx.rect(ML,y,w23,BH/2-1);}ctx.fill();
+      // 2025 bar (bottom half, vivid)
       const w25=(v25/maxV)*(W-ML-MR);
-      ctx.fillStyle=col+'aa';ctx.beginPath();try{ctx.roundRect(ML,y+BH/2,w25,BH/2-1,[0,0,1,1]);}catch{ctx.rect(ML,y+BH/2,w25,BH/2-1);}ctx.fill();
-      ctx.font='500 9px JetBrains Mono,monospace';ctx.fillStyle='#9dc4e0';ctx.textAlign='left';ctx.fillText(fmtK(v25),ML+w25+5,y+BH-2);
+      ctx.fillStyle=col+'cc';
+      ctx.beginPath();try{ctx.roundRect(ML,y+BH/2,w25,BH/2-1,[0,0,2,2]);}catch{ctx.rect(ML,y+BH/2,w25,BH/2-1);}ctx.fill();
+      // Value label — 2025 bold, 2023 dimmer
+      ctx.font='500 9px JetBrains Mono,monospace';ctx.fillStyle='#e0f0ff';
+      // If bar is too wide, put value inside bar instead of outside
+      const v25lbl=fmtK(v25),v25lw=ctx.measureText(v25lbl).width;
+      if(ML+w25+5+v25lw>W-4){ctx.fillStyle='#0b1a2b';ctx.textAlign='right';ctx.fillText(v25lbl,ML+w25-4,y+BH-2);}
+      else{ctx.textAlign='left';ctx.fillText(v25lbl,ML+w25+5,y+BH-2);}
+      ctx.font='7px JetBrains Mono,monospace';ctx.fillStyle='#5a8aaa';ctx.textAlign='left';
+      ctx.fillText(fmtK(v23),ML+w23+5,y+BH/2-2);
     });
   }else{
     const deltas=cats.map(c=>({cat:c,d:(gl25[c]||0)-(gl23[c]||0)}));
@@ -1115,9 +1180,13 @@ function renderLU(){
     ctx.beginPath();ctx.moveTo(mid,0);ctx.lineTo(mid,H);ctx.stroke();ctx.setLineDash([]);
     deltas.forEach(({cat,d},i)=>{
       const y=14+i*(BH+GAP),bw=(Math.abs(d)/maxD)*((W-ML-MR)/2),col=d>0?'#78d890':'#f06080';
-      ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='#9dc4e0';ctx.textAlign='right';ctx.fillText(cat.slice(0,17),ML-8,y+BH/2+3);
+      ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='#9dc4e0';ctx.textAlign='right';ctx.fillText(cat,ML-4,y+BH/2+3);
       ctx.fillStyle=col+'aa';
-      if(d>0){ctx.beginPath();try{ctx.roundRect(mid,y+3,bw,BH-6,[0,2,2,0]);}catch{ctx.rect(mid,y+3,bw,BH-6);}ctx.fill();ctx.font='500 9px JetBrains Mono,monospace';ctx.fillStyle=col;ctx.textAlign='left';ctx.fillText('+'+fmtK(d),mid+bw+4,y+BH/2+3);}
+      if(d>0){ctx.beginPath();try{ctx.roundRect(mid,y+3,bw,BH-6,[0,2,2,0]);}catch{ctx.rect(mid,y+3,bw,BH-6);}ctx.fill();
+        ctx.font='500 9px JetBrains Mono,monospace';ctx.fillStyle=col;
+        const dlbl='+'+fmtK(d),dlw=ctx.measureText(dlbl).width;
+        if(mid+bw+4+dlw>W-4){ctx.fillStyle='#0b1a2b';ctx.textAlign='right';ctx.fillText(dlbl,mid+bw-4,y+BH/2+3);}
+        else{ctx.textAlign='left';ctx.fillText(dlbl,mid+bw+4,y+BH/2+3);}}
       else{ctx.beginPath();try{ctx.roundRect(mid-bw,y+3,bw,BH-6,[2,0,0,2]);}catch{ctx.rect(mid-bw,y+3,bw,BH-6);}ctx.fill();ctx.font='500 9px JetBrains Mono,monospace';ctx.fillStyle=col;ctx.textAlign='right';ctx.fillText(fmtK(d),mid-bw-4,y+BH/2+3);}
     });
   }
@@ -1126,7 +1195,7 @@ function renderLU(){
 function renderZoneBars(){
   const data=Object.entries(D.zones25||SEED.zones25).map(([z,c])=>({z,c})).sort((a,b)=>b.c-a.c);
   const max=data[0]?.c||1;
-  $('zoneBars').innerHTML=data.slice(0,25).map(({z,c})=>{
+  $('zoneBars').innerHTML=data.map(({z,c})=>{
     const w=(c/max*100).toFixed(1),col=zc(z),tc=ztc(z),act=filters.zone===z;
     return `<div class="brow ${act?'on':''}" onclick="zClick('${z}')" style="padding:3px 6px 3px 8px;">
       <span class="blbl" title="${z}">${z}</span>
@@ -1235,6 +1304,9 @@ function fillAllDrops(){
   fillSel('fDist',Object.keys(D.districts).sort());
   fillSel('fProv',Object.keys(D.provinces).sort());
   fillSel('fZone',[...new Set([...Object.keys(D.zones25||SEED.zones25),...Object.keys(D.zones23||SEED.zones23)])].sort());
+  if(Object.keys(D.sectors).length) fillSel('fSec',Object.keys(D.sectors).sort());
+  if(Object.keys(D.cells).length) fillSel('fCell',Object.keys(D.cells).sort());
+  if(Object.keys(D.villages).length) fillSel('fVill',Object.keys(D.villages).sort());
   ['fProv','fDist','fSec','fCell','fVill','fZone','fYear'].forEach(id=>{
     const e=$(id);if(!e)return;
     const k={fProv:'province',fDist:'district',fSec:'sector',fCell:'cell',fVill:'village',fZone:'zone',fYear:'year'}[id];
@@ -1290,48 +1362,114 @@ function zoomMap(key){
 
 function initMap(){
   if(mapLoaded)return;mapLoaded=true;
-  const lnk=document.createElement('link');lnk.rel='stylesheet';lnk.href='https://js.arcgis.com/4.29/esri/themes/dark/main.css';document.head.appendChild(lnk);
+  const lnk=document.createElement('link');lnk.rel='stylesheet';
+  lnk.href='https://js.arcgis.com/4.29/esri/themes/dark/main.css';
+  document.head.appendChild(lnk);
   const s=document.createElement('script');s.src='https://js.arcgis.com/4.29/';
   s.onload=function(){
     setTimeout(function(){
       if(typeof require==='undefined')return;
-      require(['esri/config','esri/WebMap','esri/views/MapView','esri/widgets/Home','esri/widgets/Search','esri/widgets/Legend','esri/widgets/Expand'],
-      function(esriConfig,WebMap,MapView,Home,Search,Legend,Expand){
+      require([
+        'esri/config','esri/WebMap','esri/views/MapView',
+        'esri/layers/FeatureLayer',
+        'esri/widgets/Swipe','esri/widgets/Home','esri/widgets/Search',
+        'esri/widgets/Expand','esri/widgets/Legend','esri/widgets/ScaleBar'
+      ],function(esriConfig,WebMap,MapView,FeatureLayer,Swipe,Home,Search,Expand,Legend,ScaleBar){
         esriConfig.portalUrl='https://www.arcgis.com';
+
+        // ── Load the user's WebMap as the base
         const wm=new WebMap({portalItem:{id:WEBMAP_ID}});
-        const view=new MapView({container:'mapDiv',map:wm,ui:{components:['zoom']}});
-        mapView = view; // expose globally
-        view.ui.add(new Home({view}),'top-left');
-        view.ui.add(new Search({view}),'top-right');
-        view.ui.add(new Expand({view,content:new Legend({view}),expandIcon:'legend',expanded:false}),'bottom-left');
+        const view=new MapView({
+          container:'mapDiv',map:wm,
+          center:[29.87,-1.94],zoom:9,
+          ui:{components:['zoom','attribution']},
+          popup:{dockEnabled:true,dockOptions:{position:'bottom-right',breakpoint:false}}
+        });
+        mapView=view;
+
+        // ── Zone colour renderer (shared)
+        const zoneColors={A1:'#66bb22',A2:'#88cc33',R1A:'#ffe033',R1B:'#ffd580',R2:'#ffaa22',R3:'#ff7700',R4:'#ff4422',R1:'#ffcc44',RS:'#ffbbaa',C1:'#ff3377',C3:'#cc0044',C4:'#ff0066',T1:'#4477bb',T2:'#335588',I1:'#bb5500',I2:'#883300',F1:'#226611',F2:'#1d4a1b',PF1:'#1144bb',PF2:'#2255cc',W1B:'#0066aa',W2:'#0088cc',OS:'#225533',PA:'#009944',ET:'#00cc88',B1:'#334444'};
+        const makeRenderer=field=>({
+          type:'unique-value',field,
+          defaultSymbol:{type:'simple-fill',color:[42,69,96,160],outline:{color:[255,255,255,30],width:.2}},
+          uniqueValueInfos:Object.entries(zoneColors).map(([v,c])=>({
+            value:v,symbol:{type:'simple-fill',color:c+'bb',outline:{color:c,width:.5}}
+          }))
+        });
+
+        // ── Two overlay layers for the swipe — 2023 left, 2025 right
+        const layer2023=new FeatureLayer({
+          url:SVC,renderer:makeRenderer('zone_code_2023'),opacity:.9,
+          popupTemplate:{title:'2023 Zone: {zone_code_2023}',content:'District: {district}<br>Gen LU: {gen_lu_2023}'}
+        });
+        const layer2025=new FeatureLayer({
+          url:SVC,renderer:makeRenderer('zone_code_2025'),opacity:.9,
+          popupTemplate:{title:'2025 Zone: {zone_code_2025}',content:'District: {district}<br>Gen LU: {gen_lu_2025}<br>Changed: {change_io}'}
+        });
+
+        // ── Building points — only when zoomed in past 1:50 000
+        const buildingPts=new FeatureLayer({
+          url:SVC,minScale:50000,maxScale:0,opacity:.8,
+          renderer:{type:'simple',symbol:{type:'simple-marker',color:'#00d4b8',size:5,outline:{color:'#0b1a2b',width:.8}}},
+          popupTemplate:{title:'Building',content:'District: {district}<br>Zone 2025: {zone_code_2025}<br>Zone 2023: {zone_code_2023}'}
+        });
+
         wm.when(()=>{
-          const ph=document.querySelector('#mapDiv .map-ph');if(ph)ph.style.display='none';
-          $('maphint').textContent='Click a feature to filter & zoom';
+          // Add our layers on top of the WebMap
+          wm.addMany([layer2023,layer2025,buildingPts]);
+
+          // Swipe — 2023 on left, 2025 on right
+          const swipe=new Swipe({view,leadingLayers:[layer2023],trailingLayers:[layer2025],position:50,direction:'horizontal'});
+          view.ui.add(swipe);
+
+          view.ui.add(new Home({view}),'top-left');
+          view.ui.add(new Search({view}),'top-right');
+          view.ui.add(new ScaleBar({view,unit:'metric'}),'bottom-right');
+          view.ui.add(new Expand({
+            view,content:new Legend({view,layerInfos:[
+              {layer:layer2025,title:'Zones 2025'},
+              {layer:layer2023,title:'Zones 2023'}
+            ]}),expandIcon:'legend',expanded:false
+          }),'bottom-left');
+
+          const ph=document.getElementById('mapPh');if(ph)ph.style.display='none';
+          const lb=document.getElementById('mapLegendBar');if(lb)lb.style.display='flex';
+          $('maphint').textContent='Drag swipe handle to compare 2023 ↔ 2025 · Click zone to filter';
+
+          // Zoom hint for building points
+          view.watch('scale',scale=>{
+            const hint=document.getElementById('mapZoomHint');
+            if(hint)hint.classList.toggle('active',scale<50000);
+          });
+
+          // Click → filter dashboard + zoom map
           view.on('click',async evt=>{
             try{
-              const res=await view.hitTest(evt);
+              const res=await view.hitTest(evt,{include:[layer2025,layer2023]});
               const hit=res.results[0];
               if(!hit||!hit.graphic)return;
               const a=hit.graphic.attributes;
               if(a[F.district]){doFilter('district',a[F.district]);zoomMap(a[F.district]);}
             }catch(e){}
           });
-        },()=>$('maphint').textContent='Map unavailable');
+        },()=>$('maphint').textContent='Map unavailable — check network / portal access');
       });
     },150);
   };
   document.head.appendChild(s);
 }
-
 // ═══════════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════════
 D.provinces=buildProvs(D.districts);
 fillAllDrops();
-setTimeout(()=>{
-  renderTags();renderAll();
-  setTimeout(()=>loadLive(),200);
-},0);
+// Wait for DOM paint so offsetWidth is available for canvas sizing
+requestAnimationFrame(()=>{
+  requestAnimationFrame(()=>{
+    renderTags();renderAll();
+    setTimeout(()=>loadLive(),200);
+  });
+});
 
 // Re-render charts on window resize
 let resizeTimer;
