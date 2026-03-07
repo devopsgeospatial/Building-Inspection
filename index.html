@@ -283,7 +283,7 @@ tbody td{padding:7px 14px;font-family:var(--mono);font-size:10px;color:var(--ink
     </div>
     <div class="card">
       <div class="card-hd">
-        <div class="card-title"><span class="card-title-dot"></span>BUILDINGS PER LAND USE CATEGORY</div>
+        <div class="card-title"><span class="card-title-dot"></span>BUILDINGS PER LAND USE CATEGORY 2023–2025</div>
         <div style="display:flex;align-items:center;gap:6px;">
           <div class="yr-bar" style="transform:scale(.85);transform-origin:right center;">
             <button class="yr-btn on" id="lu_abs" onclick="setLUMode('abs')">ABS</button>
@@ -395,14 +395,6 @@ tbody td{padding:7px 14px;font-family:var(--mono);font-size:10px;color:var(--ink
   </div>
   <div class="card">
     <div class="tbl-ctrl">
-      <span class="tbl-lbl">GROUP BY</span>
-      <select class="tbl-sel" id="tblGrp" onchange="buildTbl()">
-        <option value="province">Province</option>
-        <option value="district" selected>District</option>
-        <option value="sector">Sector</option>
-        <option value="cell">Cell</option>
-        <option value="village">Village</option>
-      </select>
       <span class="tbl-lbl" style="margin-left:6px;">YEAR</span>
       <select class="tbl-sel" id="tblYr" onchange="buildTbl()">
         <option value="2025">2025</option><option value="2023">2023</option>
@@ -414,12 +406,9 @@ tbody td{padding:7px 14px;font-family:var(--mono);font-size:10px;color:var(--ink
     <div style="overflow-x:auto;max-height:480px;overflow-y:auto;">
       <table><thead><tr>
         <th onclick="sortTbl(0)">#</th>
-        <th onclick="sortTbl(1)">AREA</th>
-        <th onclick="sortTbl(2)">ZONE CODE</th>
-        <th onclick="sortTbl(3)">ZONE NAME</th>
-        <th onclick="sortTbl(4)">GEN LU</th>
-        <th onclick="sortTbl(5)">BUILDINGS ↕</th>
-        <th>SHARE</th>
+        <th onclick="sortTbl(1)">ZONE CODE</th>
+        <th onclick="sortTbl(2)">ZONE NAME</th>
+        <th onclick="sortTbl(3)">BUILDINGS ↕</th>
       </tr></thead>
       <tbody id="tbody"></tbody></table>
     </div>
@@ -493,7 +482,6 @@ let activeBar={s1:null,s3:null};
 
 const $=id=>document.getElementById(id);
 const fmt=n=>(n||0).toLocaleString();
-const fmtK=v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(1)+'K':String(v||0);
 const pct=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'—';
 const zc=z=>ZC[z]||'#5a8aaa';
 const ztc=z=>LZ.has(z)?'#0b1a2b':'rgba(255,255,255,.9)';
@@ -602,12 +590,12 @@ async function loadLive(){
 function updateMasthead(){
   const tot=D.total||SEED.total,chg=D.changed||SEED.changed;
   const gl=D.genlu25||SEED.genlu25;
-  $('mTot').textContent=fmtK(tot);
+  $('mTot').textContent=fmt(tot);
   $('mTotSub').textContent=filters.district||filters.province||'All Rwanda';
-  $('mChg').textContent=fmtK(chg);
+  $('mChg').textContent=fmt(chg);
   $('mChgSub').textContent=pct(chg,tot)+' reclassified';
-  $('mRes').textContent=fmtK(gl['Residential']||0);
-  $('mAgr').textContent=fmtK(gl['Agriculture']||0);
+  $('mRes').textContent=fmt(gl['Residential']||0);
+  $('mAgr').textContent=fmt(gl['Agriculture']||0);
   $('mRate').textContent=pct(chg,tot);
 }
 
@@ -635,7 +623,7 @@ function renderS1(){
       <span class="blbl" style="width:46px;text-align:right;" title="${z}: ${ZN[z]||z}">${z}</span>
       <div class="btrack">
         <div class="bfill" style="width:${w}%;background:${col};">
-          <span style="color:${tc}">${fmtK(c)}</span>
+          <span style="color:${tc}">${fmt(c)}</span>
         </div>
       </div>
     </div>`;
@@ -682,7 +670,7 @@ function renderStackedChart(cvId,wrapId,ttId,lvl,yr,filterKey){
     ctx.strokeStyle=v===0?'rgba(255,255,255,.1)':'rgba(255,255,255,.04)';ctx.lineWidth=v===0?1:.5;
     ctx.beginPath();ctx.moveTo(M.l,y);ctx.lineTo(CW-M.r,y);ctx.stroke();
     ctx.font='8px JetBrains Mono,monospace';ctx.fillStyle='#9dc4e0';ctx.textAlign='right';
-    ctx.fillText(fmtK(v),M.l-5,y+3);
+    ctx.fillText(fmt(v),M.l-5,y+3);
   }
   const hits=[];
   areas.forEach(([l,tot],i)=>{
@@ -761,51 +749,140 @@ function setLUMode(m){luMode=m;$('lu_abs').classList.toggle('on',m==='abs');$('l
 
 function renderLU(){
   const cv=$('cvLU');if(!cv)return;
+  const wrap=cv.parentElement;
   const dpr=window.devicePixelRatio||1;
-  const W=cv.parentElement.offsetWidth||380;
+  const W=wrap.offsetWidth||380;
   const gl25=D.genlu25||SEED.genlu25,gl23=D.genlu23||SEED.genlu23;
   const cats=Object.keys(gl25).filter(k=>k!=='Unclassified').sort((a,b)=>(gl25[b]||0)-(gl25[a]||0));
-  const BH=22,GAP=4,MR=72;
+
+  const ROW=17,      // height of each individual bar
+        GAP_IN=3,    // gap between the two bars of the same category
+        GAP_OUT=12,  // gap between categories
+        MR=10;       // right margin
+
   cv.width=1;cv.height=1;
-  const ctx=cv.getContext('2d');ctx.font='9px JetBrains Mono,monospace';
-  const ML=Math.ceil(Math.max(...cats.map(c=>ctx.measureText(c).width)))+10;
-  const H=cats.length*(BH+GAP)+22;
+  const ctx=cv.getContext('2d');
+  ctx.font='9px JetBrains Mono,monospace';
+  const ML=Math.ceil(Math.max(...cats.map(c=>ctx.measureText(c).width)))+16;
+  const BAR_W=W-ML-MR;
+  const H=cats.length*(ROW*2+GAP_IN+GAP_OUT);
+
   cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
   ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
-  const tot25=Object.values(gl25).reduce((s,v)=>s+v,0),tot23=Object.values(gl23).reduce((s,v)=>s+v,0);
-  $('s4meta').textContent=`2025: ${fmtK(tot25)} · 2023: ${fmtK(tot23)}`;
+
+  const tot25=Object.values(gl25).reduce((s,v)=>s+v,0),
+        tot23=Object.values(gl23).reduce((s,v)=>s+v,0);
+  $('s4meta').textContent=`2025: ${fmt(tot25)} · 2023: ${fmt(tot23)}`;
+
   if(luMode==='abs'){
-    const maxV=Math.max(...cats.map(c=>Math.max(gl25[c]||0,gl23[c]||0)));
-    ctx.font='7px JetBrains Mono,monospace';ctx.textAlign='left';
-    ctx.fillStyle='rgba(160,200,220,.4)';ctx.fillRect(ML,2,22,6);
-    ctx.fillStyle='#9dc4e0';ctx.fillText('2023',ML+25,9);
-    ctx.fillStyle='rgba(160,200,220,.85)';ctx.fillRect(ML+60,2,22,6);
-    ctx.fillStyle='#9dc4e0';ctx.fillText('2025',ML+85,9);
+    const maxV=Math.max(...cats.map(c=>Math.max(gl25[c]||0,gl23[c]||0)))||1;
+
+    // Hit-test registry for hover
+    const hits=[];
+
     cats.forEach((cat,i)=>{
-      const y=18+i*(BH+GAP),v25=gl25[cat]||0,v23=gl23[cat]||0,col=gc(cat);
-      ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='#9dc4e0';ctx.textAlign='right';ctx.fillText(cat,ML-4,y+BH/2+3);
-      const w23=(v23/maxV)*(W-ML-MR);
-      ctx.fillStyle=col+'40';ctx.beginPath();try{ctx.roundRect(ML,y,w23,BH/2-1,[2,2,0,0]);}catch{ctx.rect(ML,y,w23,BH/2-1);}ctx.fill();
-      const w25=(v25/maxV)*(W-ML-MR);
-      ctx.fillStyle=col+'cc';ctx.beginPath();try{ctx.roundRect(ML,y+BH/2,w25,BH/2-1,[0,0,2,2]);}catch{ctx.rect(ML,y+BH/2,w25,BH/2-1);}ctx.fill();
-      ctx.font='500 9px JetBrains Mono,monospace';ctx.fillStyle='#e0f0ff';
-      const v25lbl=fmtK(v25),v25lw=ctx.measureText(v25lbl).width;
-      if(ML+w25+5+v25lw>W-4){ctx.fillStyle='#0b1a2b';ctx.textAlign='right';ctx.fillText(v25lbl,ML+w25-4,y+BH-2);}
-      else{ctx.textAlign='left';ctx.fillText(v25lbl,ML+w25+5,y+BH-2);}
-      ctx.font='7px JetBrains Mono,monospace';ctx.fillStyle='#5a8aaa';ctx.textAlign='left';ctx.fillText(fmtK(v23),ML+w23+5,y+BH/2-2);
+      const blockY=i*(ROW*2+GAP_IN+GAP_OUT);
+      const v23=gl23[cat]||0, v25=gl25[cat]||0, col=gc(cat);
+      const w23=Math.max(2,(v23/maxV)*BAR_W);
+      const w25=Math.max(2,(v25/maxV)*BAR_W);
+
+      // Category label — vertically centred between both bars
+      ctx.font='9px JetBrains Mono,monospace';
+      ctx.fillStyle='#9dc4e0';
+      ctx.textAlign='right';
+      ctx.fillText(cat, ML-6, blockY+ROW+GAP_IN/2+3);
+
+      // ── Top bar (2023) — lighter shade ──
+      const y23=blockY;
+      ctx.fillStyle=col+'50';
+      ctx.beginPath();try{ctx.roundRect(ML,y23,w23,ROW,[2]);}catch{ctx.rect(ML,y23,w23,ROW);}ctx.fill();
+      // Number on bar
+      ctx.font='700 8.5px JetBrains Mono,monospace';
+      const n23=fmt(v23), nw23=ctx.measureText(n23).width;
+      if(w23>nw23+10){
+        ctx.fillStyle='rgba(255,255,255,.7)';ctx.textAlign='left';ctx.fillText(n23,ML+6,y23+ROW-4);
+      }else{
+        ctx.fillStyle='#7faabe';ctx.textAlign='left';ctx.fillText(n23,ML+w23+5,y23+ROW-4);
+      }
+      hits.push({x:ML,y:y23,w:w23,h:ROW,cat,yr:'2023',val:v23,col});
+
+      // ── Bottom bar (2025) — full shade ──
+      const y25=blockY+ROW+GAP_IN;
+      ctx.fillStyle=col+'cc';
+      ctx.beginPath();try{ctx.roundRect(ML,y25,w25,ROW,[2]);}catch{ctx.rect(ML,y25,w25,ROW);}ctx.fill();
+      // Number on bar
+      const n25=fmt(v25), nw25=ctx.measureText(n25).width;
+      if(w25>nw25+10){
+        ctx.fillStyle='rgba(0,0,0,.75)';ctx.textAlign='left';ctx.fillText(n25,ML+6,y25+ROW-4);
+      }else{
+        ctx.fillStyle='#e0f0ff';ctx.textAlign='left';ctx.fillText(n25,ML+w25+5,y25+ROW-4);
+      }
+      hits.push({x:ML,y:y25,w:w25,h:ROW,cat,yr:'2025',val:v25,col});
     });
+
+    // Attach hover — get or create tooltip div
+    let tt=wrap._luTT;
+    if(!tt){
+      tt=document.createElement('div');
+      tt.style.cssText='position:absolute;pointer-events:none;display:none;background:#1c3550;border:1px solid rgba(255,255,255,.15);color:#f0f6ff;padding:7px 12px;font-family:JetBrains Mono,monospace;font-size:10px;line-height:1.6;white-space:nowrap;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.5);';
+      wrap.style.position='relative';
+      wrap.appendChild(tt);
+      wrap._luTT=tt;
+    }
+
+    // Remove old listeners
+    if(cv._luMv){cv.removeEventListener('mousemove',cv._luMv);cv.removeEventListener('mouseleave',cv._luMl);}
+
+    cv._luMv=e=>{
+      const rc=cv.getBoundingClientRect();
+      const mx=(e.clientX-rc.left)*(cv.width/(dpr*rc.width));
+      const my=(e.clientY-rc.top)*(cv.height/(dpr*rc.height));
+      const hit=hits.find(r=>mx>=r.x&&mx<=r.x+r.w&&my>=r.y&&my<=r.y+r.h);
+      if(hit){
+        cv.style.cursor='default';
+        tt.style.display='block';
+        tt.innerHTML=`<span style="display:inline-block;width:8px;height:8px;background:${hit.col};margin-right:6px;border-radius:1px;"></span><strong style="color:#00d4b8">${hit.cat}</strong><br>Year: <strong>${hit.yr}</strong><br>Buildings: <strong>${fmt(hit.val)}</strong>`;
+        const canvasLeft=e.clientX-rc.left;
+        const canvasTop=e.clientY-rc.top;
+        tt.style.left=Math.min(canvasLeft+12, W-160)+'px';
+        tt.style.top=Math.max(canvasTop-52,0)+'px';
+      }else{
+        tt.style.display='none';
+      }
+    };
+    cv._luMl=()=>{tt.style.display='none';};
+    cv.addEventListener('mousemove',cv._luMv);
+    cv.addEventListener('mouseleave',cv._luMl);
+
   }else{
+    // DELTA mode
     const deltas=cats.map(c=>({cat:c,d:(gl25[c]||0)-(gl23[c]||0)}));
-    const maxD=Math.max(...deltas.map(x=>Math.abs(x.d)))||1,mid=ML+(W-ML-MR)/2;
+    const maxD=Math.max(...deltas.map(x=>Math.abs(x.d)))||1;
+    const mid=ML+BAR_W/2;
     ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;ctx.setLineDash([2,3]);
     ctx.beginPath();ctx.moveTo(mid,0);ctx.lineTo(mid,H);ctx.stroke();ctx.setLineDash([]);
+    ctx.font='700 9px JetBrains Mono,monospace';
+    ctx.fillStyle='#f06080';ctx.textAlign='right';ctx.fillText('DECREASE',mid-6,12);
+    ctx.fillStyle='#78d890';ctx.textAlign='left';ctx.fillText('INCREASE',mid+6,12);
     deltas.forEach(({cat,d},i)=>{
-      const y=14+i*(BH+GAP),bw=(Math.abs(d)/maxD)*((W-ML-MR)/2),col=d>0?'#78d890':'#f06080';
-      ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='#9dc4e0';ctx.textAlign='right';ctx.fillText(cat,ML-4,y+BH/2+3);
+      const blockY=i*(ROW*2+GAP_IN+GAP_OUT);
+      const y=blockY+ROW/2;
+      const bw=(Math.abs(d)/maxD)*(BAR_W/2),col=d>0?'#78d890':'#f06080';
+      ctx.font='9px JetBrains Mono,monospace';ctx.fillStyle='#9dc4e0';ctx.textAlign='right';ctx.fillText(cat,ML-6,y+ROW/2+3);
       ctx.fillStyle=col+'aa';
-      if(d>0){ctx.beginPath();try{ctx.roundRect(mid,y+3,bw,BH-6,[0,2,2,0]);}catch{ctx.rect(mid,y+3,bw,BH-6);}ctx.fill();ctx.font='500 9px JetBrains Mono,monospace';ctx.fillStyle=col;const dlbl='+'+fmtK(d),dlw=ctx.measureText(dlbl).width;if(mid+bw+4+dlw>W-4){ctx.fillStyle='#0b1a2b';ctx.textAlign='right';ctx.fillText(dlbl,mid+bw-4,y+BH/2+3);}else{ctx.textAlign='left';ctx.fillText(dlbl,mid+bw+4,y+BH/2+3);}}
-      else{ctx.beginPath();try{ctx.roundRect(mid-bw,y+3,bw,BH-6,[2,0,0,2]);}catch{ctx.rect(mid-bw,y+3,bw,BH-6);}ctx.fill();ctx.font='500 9px JetBrains Mono,monospace';ctx.fillStyle=col;ctx.textAlign='right';ctx.fillText(fmtK(d),mid-bw-4,y+BH/2+3);}
+      if(d>0){
+        ctx.beginPath();try{ctx.roundRect(mid,y,bw,ROW,[0,2,2,0]);}catch{ctx.rect(mid,y,bw,ROW);}ctx.fill();
+        ctx.font='700 9px JetBrains Mono,monospace';ctx.fillStyle=col;
+        const lbl='+'+fmt(d),lw=ctx.measureText(lbl).width;
+        if(mid+bw+4+lw>W-4){ctx.fillStyle='rgba(0,0,0,.7)';ctx.textAlign='right';ctx.fillText(lbl,mid+bw-4,y+ROW-4);}
+        else{ctx.textAlign='left';ctx.fillText(lbl,mid+bw+4,y+ROW-4);}
+      }else{
+        ctx.beginPath();try{ctx.roundRect(mid-bw,y,bw,ROW,[2,0,0,2]);}catch{ctx.rect(mid-bw,y,bw,ROW);}ctx.fill();
+        ctx.font='700 9px JetBrains Mono,monospace';ctx.fillStyle=col;ctx.textAlign='right';ctx.fillText(fmt(d),mid-bw-4,y+ROW-4);
+      }
     });
+    // remove LU hover if in delta mode
+    if(cv._luMv){cv.removeEventListener('mousemove',cv._luMv);cv.removeEventListener('mouseleave',cv._luMl);}
   }
 }
 
@@ -817,50 +894,51 @@ function zClick(z){
 }
 
 // ═══ TABLE ═══
+// Table shows real data: for each zone code, show its actual count.
+// When grouped by district/sector etc., we show the breakdown we actually fetched.
+// We do NOT cross-multiply — we display what we have directly from D.zones25/23.
 function buildTbl(){
   const grp=($('tblGrp')||{}).value||'district';
   const yr=($('tblYr')||{}).value||'2025';
-  const gData={province:D.provinces,district:D.districts,sector:D.sectors,cell:D.cells,village:D.villages}[grp]||D.districts;
   const zData=yr==='2025'?(D.zones25||SEED.zones25):(D.zones23||SEED.zones23);
-  const tot=D.total||SEED.total;
+  const gData={province:D.provinces,district:D.districts,sector:D.sectors,cell:D.cells,village:D.villages}[grp]||D.districts;
+  const zTot=Object.values(zData).reduce((s,v)=>s+v,0)||1;
+  const gTot=Object.values(gData).reduce((s,v)=>s+v,0)||1;
+
   tblRows=[];
-  Object.entries(gData).forEach(([area,aT])=>{
-    Object.entries(zData).forEach(([zone,zT])=>{
-      const cnt=Math.round(aT*(zT/Math.max(SEED.total,1)));
-      if(cnt>0)tblRows.push({area,zone,zn:ZN[zone]||zone,lu:Object.entries(GLC).find(([k])=>ZN[zone]?.includes(k))?.[0]||'—',cnt,yr});
-    });
+  // Row per zone code — count is real from the fetched zone data
+  Object.entries(zData).sort((a,b)=>b[1]-a[1]).forEach(([zone,cnt])=>{
+    if(cnt>0) tblRows.push({zone, zn:ZN[zone]||zone, cnt, yr});
   });
-  tblRows.sort((a,b)=>b.cnt-a.cnt);
-  $('s7meta').textContent=fmt(tblRows.length)+' RECORDS';
+  $('s7meta').textContent=fmt(tblRows.length)+' ZONE CODES';
   filterTbl();
 }
 function filterTbl(){
   const q=($('tblQ').value||'').toLowerCase();
-  filtTbl=tblRows.filter(r=>!q||r.area.toLowerCase().includes(q)||r.zone.toLowerCase().includes(q)||r.zn.toLowerCase().includes(q));
+  filtTbl=tblRows.filter(r=>!q||r.zone.toLowerCase().includes(q)||r.zn.toLowerCase().includes(q));
   $('tblMeta').textContent=fmt(filtTbl.length)+' RECORDS';
   renderTbl();
 }
 function sortTbl(c){if(sCol===c)sDir*=-1;else{sCol=c;sDir=-1;}renderTbl();}
 function renderTbl(){
-  const rows=[...filtTbl].sort((a,b)=>{const k=['','area','zone','zn','lu','cnt'][sCol]||'cnt';const va=a[k],vb=b[k];return sDir*(typeof va==='number'?va-vb:String(va).localeCompare(String(vb)));}).slice(0,200);
-  const tot=D.total||SEED.total;
+  const rows=[...filtTbl].sort((a,b)=>{
+    const k=['','zone','zn','cnt'][sCol]||'cnt';
+    const va=a[k],vb=b[k];
+    return sDir*(typeof va==='number'?va-vb:String(va).localeCompare(String(vb)));
+  }).slice(0,200);
   $('tbody').innerHTML=rows.map((r,i)=>{
-    const p=tot>0?(r.cnt/tot*100).toFixed(2):0,col=zc(r.zone),tc2=ztc(r.zone);
-    return `<tr onclick="tblClick('${esc(r.area)}','${r.zone}')">
+    const col=zc(r.zone),tc2=ztc(r.zone);
+    return `<tr>
       <td><span class="rnk ${i<3?'top':''}">${i+1}</span></td>
-      <td>${r.area}</td>
       <td><span class="zchip" style="background:${col};color:${tc2}">${r.zone}</span></td>
       <td>${r.zn}</td>
-      <td>${r.lu}</td>
-      <td style="font-weight:600">${fmt(r.cnt)}</td>
-      <td><div class="mbar-w"><div class="mbar"><div class="mfill" style="width:${Math.min(parseFloat(p)*6,100)}%;background:${col}"></div></div><span class="pct-t">${p}%</span></div></td>
+      <td style="font-weight:600;font-family:var(--mono)">${fmt(r.cnt)}</td>
     </tr>`;
   }).join('');
 }
-function tblClick(area,zone){doFilter('district',area);doFilter('zone',zone);}
 function dlCSV(){
-  const csv=[['AREA','ZONE','ZONE NAME','GEN LU','COUNT','YEAR'],...filtTbl.slice(0,5000).map(r=>[r.area,r.zone,r.zn,r.lu,r.cnt,r.yr])].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`Rwanda_Buildings_${new Date().toISOString().slice(0,10)}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);
+  const csv=[['ZONE CODE','ZONE NAME','BUILDINGS','YEAR'],...filtTbl.slice(0,5000).map(r=>[r.zone,r.zn,r.cnt,r.yr])].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`Rwanda_Zoning_${new Date().toISOString().slice(0,10)}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 
 // ═══ FILTER HANDLERS ═══
